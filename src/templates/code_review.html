@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>DERP: daily</title>
+    <title>DERP: code review</title>
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
@@ -48,47 +48,41 @@
     <div class="container-full-left">
         <div class="row">
 
-            <!-- daily update -->
+            <!-- weekly update -->
             <div class="col-lg-4">
-                <label> Daily Status: </label>
-                {% if session.daily_completed %}
-                <p style="color:green">COMPLETE</p>
-                {% else %}
-                <p style="color:red">incomplete</p>
-                {% endif %}
+                <h1>Pending Code Reviews</h1>
 
-                <form action="{{url_for('daily')}}" method="POST">
+                {% for entry in session.pending_reviews %}
+                <p><label> GitHub Repo: </label> {{ entry.url }}</p>
+                <form action="{{url_for('code_review')}}" method="POST">
                     <div class="input-group" style="width:340px;">
-                        <label> Daily Submission: </label>
-                        <textarea id="daily_field" class="form-control" rows="8" title="Daily status!" placeholder="update your daily status here" name="daily" onkeyup="countChar(this)"></textarea>
+                        <label> Code Review: </label>
+                        <p>This is a suggested template. You don't necessarily have to use it. By default, the review is anonymous (except to the instructor). You can sign it if you prefer.</p>
+                        <textarea class="form-control" rows="25" title="code review" name="review.{{ entry.review_pk }}">PROJECT: which week's project is this?&#13;&#10;&#13;&#10;INSTALLATION: does it install and run? any issues?&#13;&#10;&#13;&#10;SPECIFICATION: does it at least attempt everything in the project specification? anything missing?&#13;&#10; &#13;&#10;CORRECTNESS: is everything done correctly? any bugs or issues?&#13;&#10; &#13;&#10;STYLE: anything super rad? anything that could be done better?&#13;&#10; &#13;&#10;COMMENTS: any other comments?</textarea>
                     </div>
-                    <div id="charNum" style="color:gray"></div>
                     <div class="input-group" style="width:340px;">
                         <button type="submit" class="btn btn-success">SUBMIT</button>
                     </div>
                 </form>
+                <br>
+                {% endfor %}
 
             </div>
             <!-- end daily update column -->
 
             <!-- daily report -->
             <div class="col-lg-6">
-                <h1>Daily Report</h1>
+                <h1>Received Code Reviews</h1>
 
-                <table class="daily-report">
-                  {% for entry in session.daily_report %}
-                  {% if loop.index is divisibleby 2 %}
-                  <tr class="even">
-                  {% else %}
-                  <tr class="odd">
-                  {% endif %}
-                    <td class="day">{{ entry.timestamp | to_date }}</td>
-                    <td class="entry">{{ entry.status_message }}</td>
-                  </tr>
+                {% for entry in session.review_report %}
+                  {% for line in entry.comments.splitlines() %}
+                  <p>{{line}}</p>
                   {% endfor %}
-                </table>
+                  <br>
+                  <br>
+                {% endfor %}
             </div>
-            <!-- end daily report column -->
+            <!-- end weekly report column -->
 
         </div>
         <!-- /row -->
@@ -98,18 +92,5 @@
 
 
 </body>
-
-<script>
-$('#daily_field').keyup(function () {
-  var max = 500;
-  var len = $(this).val().length;
-  if (len >= max) {
-    $('#charNum').text(' you have passed the limit!!!');
-  } else {
-    var char = max - len;
-    $('#charNum').text(char + ' characters remaining before max is reached');
-  }
-});
-</script>
 
 </html>

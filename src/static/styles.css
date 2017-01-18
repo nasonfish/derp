@@ -85,6 +85,6 @@ tr.even {
     border: 1px solid black;
     padding-left: 2ex;
     padding-right: 2ex;
-    word-wrap: break-word;
-    word-break: break-all;
+    word-wrap: normal;
+    word-break: normal;
 }
