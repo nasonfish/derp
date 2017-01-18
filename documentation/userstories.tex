@@ -1,0 +1,115 @@
+\chapter*{User Stories}
+This section describes several of the user stories that are expected to be covered by the Development Experience Reporting Platform (DERP). User stories are ordered by user type and high level task. Each user story provides a high level user objective and possible user interface process to complete the task.
+
+\section*{Developer}
+\subsection*{User Registration}
+\subsubsection*{Objective}
+Developer would like to register and account with DERP.
+\subsubsection*{Experience}
+Developer connects to DERP and attempts to login. DERP notices that an account does not yet exist and prompts the user for a DuckId. The user is then presented with the developer dashboard page. Update Profile and Request Testing features are not available until a project manager approves the user account.
+
+
+\subsection*{Update Profile}
+\subsubsection*{Objective}
+Developer would like to update user/repo information.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects profile. The developer is then able to change their repository URL, preferred email address, and other user editable profile data.
+
+
+\subsection*{Daily Status Report}
+\subsubsection*{Objective}
+Developer would like to submit a report on progress for the day.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects daily status report. The developer is then able to enter the status message text and submit.
+
+
+\subsection*{Weekly Status Report}
+\subsubsection*{Objective}
+Developer would like to submit a report on progress for the week.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects weekly status report. The developer is then able to enter the status message text and submit.
+
+
+\subsection*{Request Testing}
+\subsubsection*{Objective}
+Developer would like to submit their work for early feedback.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects queue integration test. The developer dashboard updates with an estimate of when the integration test will be run.
+
+
+\subsection*{Status Summary Report}
+\subsubsection*{Objective}
+Developer would like to view daily report history.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects daily status summary. The developer is then shown a summary report giving the count of submitted daily status messages and displaying all the messages in order of submission.
+
+
+\subsection*{Weekly Summary Report}
+\subsubsection*{Objective}
+Developer would like to view weekly report history.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects weekly status summary. The developer is then shown a list of weekly status report dates, clicking on a date opens the report in read-only.
+
+
+\subsection*{Code Review}
+\subsubsection*{Objective}
+Developer would like to complete a code review for another developer.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects a pending code review. The developer is then shown the repository URL and a presented with a text area to enter the code review text.
+
+
+\subsection*{Code Review Review}
+\subsubsection*{Objective}
+Developer would like to view code reviews for the work in their repository.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. From the developer dashboard page, the developer selects view code reviews. The developer is then shown the code reviews submitted about their code base.
+
+
+\subsection*{Review Testing}
+\subsubsection*{Objective}
+Developer would like to see a integration test results.
+\subsubsection*{Experience}
+Developer connects to DERP and logs in if necessary. The developer dashboard shows the status of the last test (passed, partial, or failed) and timestamp of test. Clicking on the status opens the text output from the integration test.
+
+
+\section*{Project Manager}
+\subsection*{User Approval}
+\subsubsection*{Objective}
+Project manager would like to approve a developer.
+\subsubsection*{Experience}
+Project manager connects to DERP and logs in if necessary. From the manager dashboard page, the manager selects approve waiting accounts. A table listing the GitHub name, DuckId, and when the account was requested is shown. Using a checkbox, the manager selects the accounts to approve then clicks the approve button.
+
+
+\subsection*{View Daily Status}
+\subsubsection*{Objective}
+Project manager would like to see a summary of daily status reports in DERP.
+\subsubsection*{Experience}
+Project manager connects to DERP and logs in if necessary. From the manager dashboard page, the manager selects daily status summary and provides a date. DERP shows all of the daily status messages received for that day. The list can be ordered by last name or DuckId.
+
+
+\subsection*{Receive Daily Status}
+\subsubsection*{Objective}
+Project manager would like to receive a summary of daily status reports.
+\subsubsection*{Experience}
+At 6am, DERP emails all daily status messages for the previous day. Status messages are ordered by last name.
+
+
+\subsection*{Review Weekly Status}
+\subsubsection*{Objective}
+Project manager would like to see weekly status reports across users.
+\subsubsection*{Experience}
+Project manager connects to DERP and logs in if necessary. From the manager dashboard page, the manager selects current weekly status. DERP provides a report showing the previous week's status messages for each user, ordered by last name. 
+
+
+\subsection*{Review User Weeklies}
+\subsubsection*{Objective}
+Project manager would like to see weekly status reports for a single user.
+\subsubsection*{Experience}
+Project manager connects to DERP and logs in if necessary. From the manager dashboard page, the manager selects view developer history. DERP provides a report showing all the weekly status messages for a selected user, ordered reverse chronological order. 
+
+
+\subsection*{Code Review Approval}
+\subsubsection*{Objective}
+Project manager would like to approve code review text.
+\subsubsection*{Experience}
+Project manager connects to DERP and logs in if necessary. From the manager dashboard page, the manager selects approve waiting code reviews. A table listing the reviewer, reviewee, and review text is shown. Using a checkbox, the manager selects the code reviews to approve then clicks the approve button.

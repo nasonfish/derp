@@ -1,0 +1,26 @@
+\chapter*{Tech Stack}
+The Development Experience Reporting Platform (DERP) product will use OSNAP's standard web application technology stack. Some additions and deviations to the standard technology stack may be needed to support DERP, these exceptions must be approved by the OSNAP Chief Information Security Officer (CISO) prior to deployment. 
+
+\section*{Standard Technologies}
+\begin{description}
+\item[Apache httpd] The Apache http daemon will be used to host the web application.
+\item[mod\_wsgi] mod\_wsgi will be used as the gateway between Apache and the application.
+\item[Python] Python 3 will be used as the application development language.
+\item[Flask] The Flask framework will support development efforts.
+\item[Postgres] The Postgres RDBMs will be used for persistent storage.
+\item[PGSQL] If needed, stored procedures will be written using the default procedure language PGSQL.
+\item[psycopg2] The psycopg2 python module will be used by the DERP application code to interface with the supporting Postgres instance.
+\end{description}
+
+
+\section*{Approved Exceptional Technologies}
+\begin{description}
+\item[GitHub Oauth] GitHub will be used for user authentication. Developers do not necessarily have OSNAP authentication credentials and an alternate service is required.
+\item[GitHub-Flask] This flask module will be used to handle oauth actions.
+\end{description}
+
+
+%\section*{Requested Exceptional Technologies}
+%\begin{description}[align=right]
+%\item[GitHub Oauth] GitHub will be used for user authentication. Developers do not necessarily have OSNAP authentication credentials and an alternate service is required.
+%\end{description}

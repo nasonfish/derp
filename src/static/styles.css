@@ -1,0 +1,90 @@
+html,body {
+  height:100%;
+}
+
+h1 {
+  font-family: Arial,sans-serif
+  font-size:80px;
+  color:#DDCCEE;
+}
+
+.lead {
+	color:#DDCCEE;
+}
+
+
+/* custom container */
+.container-full {
+  margin: 0 auto;
+  width: 100%;
+  min-height:100%;
+  background-color:#110022;
+  color:#eee;
+  overflow:hidden;
+}
+
+/* custom container */
+.container-full-left {
+    padding: 1%;
+    margin: 0 auto;
+    width: 100%;
+    min-height:100%;
+    overflow:auto;
+}
+
+.container-full a {
+  color:#efefef;
+  text-decoration:none;
+}
+
+.v-center {
+  display: inline-block;
+  vertical-align: middle;
+  float: none;
+}
+
+/* extra padding for derp banner */
+.derp-center{
+    margin-top: 7px;
+}
+
+/* custom header container */
+.container-header{
+    margin: 3px;
+}
+
+/* daily report table styles */
+table .daily-report: {
+    table-layout: fixed;
+    margin: 5px;
+    padding: 3px;
+    border: 1px solid black;
+}
+
+tr.odd {
+    /* lavender */
+    background-color: rgb(230,230,250);
+}
+
+tr.even {
+    /* thistle */
+    background-color: rgb(216,191,216);
+}
+
+.daily-report .day {
+    border: 1px solid black;
+    font-weight: bolder;
+    font-size: 150%;
+    text-align: center;
+    padding-left: 2ex;
+    padding-right: 2ex;
+    width: 25%;
+}
+
+.daily-report .entry {
+    border: 1px solid black;
+    padding-left: 2ex;
+    padding-right: 2ex;
+    word-wrap: break-word;
+    word-break: break-all;
+}

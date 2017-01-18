@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>DERP: user profile</title>
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <script type="text/javascript"
+     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+    </script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet"
+     href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+     integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+     crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script
+     src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+     integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+     crossorigin="anonymous">
+    </script>
+
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+</head>
+
+<!-- common header across pages -->
+{% include 'header.html' %}
+
+<body>
+    <div class="container-full-left">
+        <div class="row">
+
+            <!-- profile information -->
+            <div class="col-lg-12">
+                <p> <label>UO Username:</label> {{session.duck_id}} </p>
+                <p> <label>GitHub Username:</label> {{(session.user_info).github_username}} </p>
+                <p> <label>Role:</label> developer </p>
+                <form action="{{url_for('profile')}}" method="POST">
+                    <div class="input-group" style="width:340px">
+                        <label> CIS 322 GitHub Repo URL: </label>
+                        <input class="form-control input-lg" value="{{(session.user_info).repo}}" name="repo">
+                    </div>
+                    <div class="input-group" style="width:340px">
+                        <label> Email: </label>
+                        <input class="form-control input-lg" value="{{(session.user_info).email}}" type="email" name="email">
+                    </div>
+                    <div class="input-group" style="width:340px">
+                        <button type="submit" class="btn btn-success">Update User Info</button>
+                    </div>
+                </form>
+            </div>
+
+
+        </div>
+        <!-- /row -->
+
+
+    </div>
+    <!-- /container full -->
+
+
+</body>
+
+</html>
