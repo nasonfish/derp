@@ -294,18 +294,23 @@ def daily():
                 flash("TOO MANY CHARACTERS!!! 500 CHARACTER LIMIT")
                 return redirect(url_for("daily"))
 
-            if not session['daily_completed']:
-                SQL = "INSERT INTO dailies (user_fk, create_dt, message) VALUES (%s, %s, %s);"
-                data = (session['user_pk'], datetime.datetime.utcnow(), message)
-                cur.execute(SQL, data)
-                conn.commit()
-                session['daily_completed'] = True
-            else:
+            # Can't trust the session... use the stored proc to handle
+            #if not session['daily_completed']:
+            #    SQL = "INSERT INTO dailies (user_fk, create_dt, message) VALUES (%s, %s, %s);"
+            #    data = (session['user_pk'], datetime.datetime.utcnow(), message)
+            #    cur.execute(SQL, data)
+            #    conn.commit()
+            #    session['daily_completed'] = True
+            #else:
                 # update the most recent daily entry
-                SQL = "UPDATE dailies s SET message=%s FROM (SELECT * FROM dailies WHERE user_fk=%s ORDER BY create_dt DESC LIMIT 1) sub WHERE s.create_dt = sub.create_dt;"
-                data = (message, session['user_pk'])
-                cur.execute(SQL, data)
-                conn.commit()
+            #    SQL = "UPDATE dailies s SET message=%s FROM (SELECT * FROM dailies WHERE user_fk=%s ORDER BY create_dt DESC LIMIT 1) sub WHERE s.create_dt = sub.create_dt;"
+            #    data = (message, session['user_pk'])
+            #    cur.execute(SQL, data)
+            #    conn.commit()
+            SQL = "select add_daily(%s,%s);"
+            data = (session['duck_id'],message)
+            cur.execute(SQL, data)
+            conn.commit()
 
     # build the report
     #   note: this could be done in the same query as above, but this seems safer
