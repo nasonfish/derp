@@ -311,6 +311,7 @@ def daily():
             data = (session['duck_id'],message)
             cur.execute(SQL, data)
             conn.commit()
+            session['daily_completed'] = True
 
     # build the report
     #   note: this could be done in the same query as above, but this seems safer
