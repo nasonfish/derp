@@ -59,6 +59,7 @@ def is_login_ok():
     data = (session['github_username'],session['duck_id'])
     cur.execute(SQL, data)
     db_row = cur.fetchone()
+    conn.commit()
     if db_row is None:
         return False
     return True

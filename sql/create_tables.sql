@@ -36,6 +36,7 @@ CREATE TABLE code_reviews (
     released        boolean DEFAULT false, -- can the reviewee see the review
     assigned_dt     timestamp, -- date review was assigned
     review_dt       timestamp, -- date of the review
+    assignment      varchar(32), -- Which assignment to review for
     comments        text
 );
 
