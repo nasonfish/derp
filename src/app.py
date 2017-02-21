@@ -107,14 +107,14 @@ def check_pending_reviews():
     Check whether the user has pending code reviews to complete. Puts the pending review
     information into the session.
     """
-    SQL = "SELECT review_pk, reviewee_fk FROM code_reviews WHERE (reviewer_fk = %s AND review_dt IS NULL);"
+    SQL = "SELECT review_pk, reviewee_fk, assignment FROM code_reviews WHERE (reviewer_fk = %s AND review_dt IS NULL);"
     data = (session['user_pk'],)
     cur.execute(SQL, data)
     res = cur.fetchall()
     app.logger.debug("user pending code reviews query: {}".format(str(res)))
     pending_reviews = []
     for r in res:
-        pending_reviews.append( dict(zip(('review_pk', 'reviewee_fk'), r)) )
+        pending_reviews.append( dict(zip(('review_pk', 'reviewee_fk', 'assignment'), r)) )
     for entry in pending_reviews:
         SQL = "SELECT repo FROM users WHERE user_pk = %s;"
         data = (entry['reviewee_fk'],)

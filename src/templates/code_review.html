@@ -53,7 +53,8 @@
                 <h1>Pending Code Reviews</h1>
 
                 {% for entry in session.pending_reviews %}
-                <p><label> GitHub Repo: </label> {{ entry.url }}</p>
+		<p><label>Assignment: </label> {{ entry.assignment }}</p>
+                <p><label>GitHub Repo: </label> {{ entry.url }}</p>
                 <form action="{{url_for('code_review')}}" method="POST">
                     <div class="input-group" style="width:340px;">
                         <label> Code Review: </label>
