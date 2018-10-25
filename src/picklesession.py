@@ -7,7 +7,7 @@ from contextlib import suppress
 from flask.sessions import SessionInterface, SessionMixin
 
 
-class PickleSession(MutableMapping, SessionMixin):
+class PickleSession(SessionMixin):
 
     def __init__(self, directory, sid, *args, **kwargs):
         self.path = os.path.join(directory, sid)

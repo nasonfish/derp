@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from flask.ext.github import GitHub
+from flask_github import GitHub
 from CONFIG import HOST, PORT, DEBUG, APP_SECRET_KEY, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DB_LOCATION
 from db_helper import UTC_OFFSET
 import psycopg2
