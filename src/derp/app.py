@@ -1,30 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from flask_github import GitHub
-from CONFIG import HOST, PORT, DEBUG, APP_SECRET_KEY, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DB_LOCATION
 from db_helper import UTC_OFFSET
-import psycopg2
 import datetime
 from ast import literal_eval
 from operator import attrgetter
 
-from picklesession import PickleSessionInterface
 import os
 
-# globals
-app  = Flask(__name__)  # instantiate the app here so it can be run as a module
-app.config['GITHUB_CLIENT_ID'] = GITHUB_CLIENT_ID
-app.config['GITHUB_CLIENT_SECRET'] = GITHUB_CLIENT_SECRET
-app.secret_key = str(APP_SECRET_KEY)
+from derp import app, cur, conn, github
 
-path='/dev/shm/derp_sessions'
-if not os.path.exists(path):
-    os.mkdir(path)
-    os.chmod(path, int('700',8))
-app.session_interface=PickleSessionInterface(path)
-
-github = GitHub(app)
-conn = psycopg2.connect(DB_LOCATION)
-cur  = conn.cursor()
 
 # jinja2 format functions
 @app.template_filter('monday')
@@ -479,8 +462,3 @@ def logout(logout_message = None):
         session.clear()
     return render_template('logout.html')
 
-# if the application is run
-if __name__ == '__main__':
-    app.secret_key = str(APP_SECRET_KEY)
-    app.debug = DEBUG
-    app.run(port=PORT, host=HOST)
