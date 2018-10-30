@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from db_helper import UTC_OFFSET
 import datetime
 from ast import literal_eval
 from operator import attrgetter
@@ -7,6 +6,7 @@ from operator import attrgetter
 import os
 
 from derp import app, cur, conn, github
+from derp.db_helper import UTC_OFFSET
 
 
 # jinja2 format functions

@@ -17,7 +17,7 @@ notes:
 HOST = "TODO"  # string
 PORT= TODO  # int
 DEBUG = False  # boolean, should be False for deployment
-APP_SECRET_KEY = "TODO"  # string, see note 1 above
+SECRET_KEY = "TODO"  # string, see note 1 above
 GITHUB_CLIENT_ID = "TODO"  # string, this need not be protected
 GITHUB_CLIENT_SECRET = "TODO"  # string, this is secret
 DB_LOCATION = "TODO"  # string, see note 2 above
