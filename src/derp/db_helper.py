@@ -49,7 +49,7 @@ class User:
             student_id      varchar(128) not null,
             email           varchar(128),
             repo            varchar(256),
-            role_fk         varchar(128) not null DEFAULT 'student'"""
+            role            varchar(128) not null DEFAULT 'student'"""
         cur.execute(sql)
         conn.commit()
 
