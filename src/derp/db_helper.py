@@ -30,9 +30,94 @@ class Roles:
 class DatabaseError(Exception):
     pass
 
-
+# TODO some sort of class registration which will find all of the tables and init them
 class User:
+    def __init__(self, user_pk, github_username, student_id, email):
+        self.user_pk = user_pk
+        self.github_username = github_username
+        self.student_id = student_id
+        self.email = email
 
+    @staticmethod
+    def table_init():
+        sql = """CREATE TABLE IF NOT EXISTS user (
+            user_pk         serial primary key,
+            github_username varchar(128) NOT NULL,
+            student_id      varchar(128) NOT NULL,
+            email           varchar(128) NOT NULL"""
+        cur.execute(sql)
+        conn.commit()
+
+    @staticmethod
+    def create(github_username, student_id, email):
+        sql = """INSERT INTO user (github_username, student_id, email, repo) 
+        VALUES (%s, %s, %s, %s) RETURNING user_pk"""
+        cur.execute(sql, (github_username, student_id, email))
+        conn.commit()
+        db_row = cur.fetchone()
+        if not db_row:
+            # will only happen if the "not null" constraints are violated
+            raise DatabaseError("Could not complete create operation.")
+        return User(db_row['user_pk'], github_username, student_id, email)
+
+    @staticmethod
+    def get(user_pk=None, github_username=None, student_id=None, email=None, limit=1):
+        sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
+        params = []
+        if user_pk:
+            params += user_pk
+            sql += 'user_pk == %s AND '
+        if github_username:
+            params += github_username
+            sql += 'github_username == %s AND '
+        if student_id:
+            params += student_id
+            sql += 'student_id == %s AND '
+        if email:
+            params += email
+            sql += 'email == %s AND '
+        sql += "1 "
+        if limit:
+            sql += "LIMIT 1"
+        cur.execute(sql, params)
+        conn.commit()
+        u = cur.fetchone()
+        if not u:
+            return None
+        return User(u['user_pk'], u['github_username'], u['student_id'], u['email'])
+
+    def delete(self):
+        cur.execute("DELETE FROM user WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
+        conn.commit()
+
+    def save(self):
+        cur.execute('UPDATE users SET github_username=%s, student_id=%s, email=%s, repo=%s WHERE user_pk=%s',
+                    self.github_username, self.student_id, self.email, self.user_pk)
+        conn.commit()
+        # TODO check if it was successful
+
+
+class UserCourse:
+
+    @staticmethod
+    def table_init():
+        sql = """CREATE TABLE IF NOT EXISTS user_course (
+            user_fk         INTEGER REFERENCES user(user_pk) NOT NULL,
+            course_fk       INTEGER REFERENCES user(course_pk) NOT NULL,
+            repo            varchar(256),
+            role            varchar(128) not null DEFAULT 'student'
+            PRIMARY KEY (user_fk, course_fk)"""
+        cur.execute(sql)
+        conn.commit()
+
+    @staticmethod
+    def enroll(user, course, repo=None, role=None):
+        sql = """INSERT INTO user_course (user_fk, course_fk, repo, role) VALUES (%s, %s, %s, %s)"""
+        cur.execute(sql, user.user_pk, course.course_pk, repo, role)
+        conn.commit()
+
+
+class Course:
     def __init__(self, user_pk, github_username, student_id, role, email=None, repo=None):
         self.user_pk = user_pk
         self.github_username = github_username
@@ -43,13 +128,11 @@ class User:
 
     @staticmethod
     def table_init():
-        sql = """CREATE TABLE IF NOT EXISTS user (
-            user_pk         serial primary key,
-            github_username varchar(128) not null,
-            student_id      varchar(128) not null,
-            email           varchar(128),
-            repo            varchar(256),
-            role            varchar(128) not null DEFAULT 'student'"""
+        sql = """CREATE TABLE IF NOT EXISTS course (
+            course_pk       SERIAL PRIMARY KEY,
+            course_code     VARCHAR(128) NOT NULL,
+            professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
+            role            VARCHAR(128) NOT NULL DEFAULT 'student'"""
         cur.execute(sql)
         conn.commit()
 
@@ -66,9 +149,12 @@ class User:
         return User(db_row['user_pk'], github_username, student_id, role, email, repo)
 
     @staticmethod
-    def get(github_username=None, student_id=None, email=None, repo=None, role=None, limit=1):
+    def get(user_pk=None, github_username=None, student_id=None, email=None, repo=None, role=None, limit=1):
         sql = 'SELECT (user_pk, github_username, student_id, email, repo, role) FROM user WHERE '
         params = []
+        if user_pk:
+            params += user_pk
+            sql += 'user_pk == %s AND '
         if github_username:
             params += github_username
             sql += 'github_username == %s AND '
@@ -90,10 +176,12 @@ class User:
         cur.execute(sql, params)
         conn.commit()
         u = cur.fetchone()
+        if not u:
+            return None
         return User(u['user_pk'], u['github_username'], u['student_id'], u['email'], u['repo'], u['role'])
 
     def delete(self):
-        cur.execute("DELETE FROM user WHERE user_pk=%s", (self.pk,))  # TODO check if it was successful
+        cur.execute("DELETE FROM user WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
 
     def save(self):
         cur.execute('UPDATE users SET github_username=%s, student_id=%s, email=%s, repo=%s, role=%s WHERE user_pk=%s',
