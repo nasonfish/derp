@@ -1,4 +1,5 @@
 from derp import app
+import setup
 
 # if the application is run
 if __name__ == '__main__':
