@@ -1,7 +1,7 @@
 import datetime
 
 from derp import cur, conn
-from flask import request
+from flask import request, session
 
 import base64
 import random
@@ -44,7 +44,7 @@ class Session:
         self.session_challenge = session_challenge
 
     @staticmethod
-    def new_session(self, user):
+    def new_session(user):
         remote_addr = request.remote_addr
         challenge = str(base64.b64encode(str(random.getrandbits(256)).encode('ascii')))
         sql = """
@@ -57,6 +57,22 @@ class Session:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
         return Session(db_row['session_pk'], user, remote_addr, challenge)
+
+    @staticmethod
+    def get_user():
+        sql = """SELECT user.* FROM session 
+            LEFT JOIN user ON user_fk=user_pk 
+            WHERE challenge=%s 
+                AND student_id=%s 
+                AND remote_addr=%s"""
+        if not session or 'challenge' not in session or 'student_id' not in session or not request:
+            return None
+        cur.execute(sql, (session['challenge'], session['student_id'], request.remote_addr))
+        conn.commit()
+        db_row = cur.fetchone()
+        if not db_row:
+            return None
+        return User(db_row['user_pk'], db_row['github_username'], db_row['student_id'], db_row['email'])
 
     @staticmethod
     def table_init():

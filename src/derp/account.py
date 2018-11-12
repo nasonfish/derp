@@ -1,69 +1,43 @@
 from functools import wraps
-from derp import cur, conn
-from flask import session, redirect, url_for
+from derp import cur, conn, app, github
+from flask import session, redirect, url_for, request, flash
+
+from derp.db_helper import Session, User
 
 # helper functions
 def is_login_ok():
     """
     Check that a login is sensible. Should be checked before rendering any content.
     """
-    if 'user_id' not in session:
-        # If there isn't a github_username in the session, authentication hasn't been done
-        return False
-    if 'user_challenge' not in session:
-        return False
-
-    SQL = "SELECT duck_id,github_username FROM users WHERE github_username=%s and duck_id=%s;"
-    data = (session['github_username'],session['duck_id'])
-    cur.execute(SQL, data)
-    db_row = cur.fetchone()
-    conn.commit()
-    if db_row is None:
-        return False
-    return True
+    return Session.get_user()
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not is_login_ok():
-            msg = "login failure: something is wrong with the session ... try logging in again"
-            return redirect(url_for("logout", logout_message = msg))
+            return redirect(url_for("login"))
         return decorated_function(*args, **kwargs)
-
-def user():
-    pass
 
 
 # get username from homepage input form
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
+    if is_login_ok():
+        return redirect(url_for("dashboard"))
     # this is probably called by a POST from the home page
     if request.method == 'POST':
-        student_id = request.form['student_id']
-        if not duck_id:
-            flash("Please try again!")
+        student_id = request.form.get('student_id', False)
+        if not student_id:
+            flash("Please provide your student ID.", 'error')
             return redirect(url_for("index"))
-
-        session['duck_id'] = duck_id
-
-        # handle the login attempt
-        if 'logged_in' not in session:
-
-            # check if the user is in the db, and redirect to the correct location
-            SQL = "SELECT duck_id FROM users WHERE duck_id = %s;"
-            data = (duck_id,)
-            cur.execute(SQL, data)
-            if not cur.fetchone():
-                app.logger.debug("user not in db ... redirecting to signup")
-                return redirect(url_for("signup"))
-            else:
-                app.logger.debug("user found ... redirecting to authorization")
-                return github.authorize()
-
-        # else user is already logged in
+        # check if the user is in the db, and redirect to the correct location
+        user = User.get(student_id=student_id)
+        if not user:
+            app.logger.debug("user not in db ... redirecting to signup")
+            return redirect(url_for("signup"))
         else:
-            return redirect(url_for("dashboard"))
+            app.logger.debug("user found ... redirecting to authorization")
+            return github.authorize()
     return redirect(url_for("index"))
 
 
@@ -72,6 +46,7 @@ def login():
 def token_getter():
     return session.get('github_access_token', None)
 
+
 # handle github authentication
 @app.route('/github_callback')
 @github.authorized_handler
@@ -79,28 +54,23 @@ def authorized(access_token):
     app.logger.debug("entering authoriztion callback")
 
     if access_token is None:
-        flash("Authorization failed!")
+        flash("Authorization failed!", 'error')
         return redirect(url_for("index"))
 
     # Add github information to the session
     session['github_access_token'] = access_token
     session['github_username'] = github.get('user')['login']
 
-    # Check for the duck_id based on the github username
-    SQL = "SELECT duck_id FROM users WHERE github_username=%s;"
-    data = (session['github_username'],)
-    cur.execute(SQL, data)
-    db_row = cur.fetchone()
-
-    if db_row is None:
+    user = User.get(github_username=session['github_username'])
+    if user is None:
         # No user registered in the DB... Go to the signup page.
         return redirect(url_for('signup'))
 
-    db_duck_id = db_row[0]
-    app.logger.debug("db duck_id: {}".format(db_duck_id))
-    session['logged_in'] = db_duck_id
-    session['duck_id']   = db_duck_id
-
+    # a successful login!
+    sess = Session.new_session(user)
+    app.logger.debug("Session id: {}".format(sess.session_pk))
+    session['student_id'] = sess.user.student_id
+    session['session_challenge'] = sess.challenge
     return redirect(url_for("dashboard"))
 
 

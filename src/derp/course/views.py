@@ -1,10 +1,11 @@
 from derp import app
 from derp.account import login_required
-from derp.db_helper import
+from derp.db_helper import Session
 
 @app.route('/')
 @login_required
 def index():
+    user = Session.get_user()
 
 #
 # # display daily submission / report page
