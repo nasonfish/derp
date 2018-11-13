@@ -1,11 +1,11 @@
 from functools import wraps
 from derp import cur, conn, app, github
-from flask import session, redirect, url_for, request, flash
+from flask import session, redirect, url_for, request, flash, render_template
 
 from derp.db_helper import Session, User
 
 # helper functions
-def is_login_ok():
+def get_session_user():
     """
     Check that a login is sensible. Should be checked before rendering any content.
     """
@@ -14,7 +14,7 @@ def is_login_ok():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not is_login_ok():
+        if not get_session_user():
             return redirect(url_for("login"))
         return decorated_function(*args, **kwargs)
 
@@ -22,7 +22,7 @@ def login_required(f):
 # get username from homepage input form
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if is_login_ok():
+    if get_session_user():
         return redirect(url_for("dashboard"))
     # this is probably called by a POST from the home page
     if request.method == 'POST':
