@@ -79,13 +79,14 @@ class Session:
         sql = """
         CREATE TABLE IF NOT EXISTS session (
             session_pk    SERIAL PRIMARY KEY,
-            user_fk       INTEGER NOT NULL REFERENCES user(user_pk),
+            user_fk       INTEGER NOT NULL REFERENCES account(user_pk),
             remote_addr   VARCHAR(128) NOT NULL,
             challenge     VARCHAR(256) NOT NULL
         )
         """
         cur.execute(sql)
         conn.commit()
+
 
 class User:
     def __init__(self, user_pk, github_username, student_id, email):
@@ -95,8 +96,8 @@ class User:
         self.email = email
 
     @staticmethod
-    def table_init():
-        sql = """CREATE TABLE IF NOT EXISTS user (
+    def table_init():  # 'user' is a reserved word in postgres AND I'M ANGRY ABOUT IT
+        sql = """CREATE TABLE IF NOT EXISTS account (
             user_pk         serial primary key,
             github_username varchar(128) NOT NULL,
             student_id      varchar(128) UNIQUE NOT NULL,
@@ -106,7 +107,7 @@ class User:
 
     @staticmethod
     def create(github_username, student_id, email):
-        sql = """INSERT INTO user (github_username, student_id, email, repo) 
+        sql = """INSERT INTO account (github_username, student_id, email, repo) 
         VALUES (%s, %s, %s, %s) RETURNING user_pk"""
         cur.execute(sql, (github_username, student_id, email))
         conn.commit()
@@ -118,23 +119,24 @@ class User:
 
     @staticmethod
     def get(user_pk=None, github_username=None, student_id=None, email=None, limit=1):
-        sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
-        params = []
+        sql = 'SELECT (user_pk, github_username, student_id, email) FROM account WHERE '
+        params = tuple()
         if user_pk:
-            params += user_pk
-            sql += 'user_pk == %s AND '
+            params += (user_pk,)
+            sql += 'user_pk = %s AND '
         if github_username:
-            params += github_username
-            sql += 'github_username == %s AND '
+            params += (github_username,)
+            sql += 'github_username = %s AND '
         if student_id:
-            params += student_id
-            sql += 'student_id == %s AND '
+            params += (student_id,)
+            sql += 'student_id = %s AND '
         if email:
-            params += email
-            sql += 'email == %s AND '
-        sql += "1 "
+            params += (email,)
+            sql += 'email = %s AND '
+        sql += "TRUE "
         if limit:
-            sql += "LIMIT " + limit
+            params += (limit,)
+            sql += "LIMIT %s"
         cur.execute(sql, params)
         conn.commit()
         if limit == 1:
@@ -152,11 +154,11 @@ class User:
         return UserCourse
 
     def delete(self):
-        cur.execute("DELETE FROM user WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
+        cur.execute("DELETE FROM account WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
         conn.commit()
 
     def save(self):
-        cur.execute('UPDATE users SET github_username=%s, student_id=%s, email=%s, WHERE user_pk=%s',
+        cur.execute('UPDATE account SET github_username=%s, student_id=%s, email=%s, WHERE user_pk=%s',
                     self.github_username, self.student_id, self.email, self.user_pk)
         conn.commit()
         # TODO check if it was successful
@@ -173,10 +175,10 @@ class UserCourse:
     @staticmethod
     def table_init():
         sql = """CREATE TABLE IF NOT EXISTS user_course (
-            user_fk         INTEGER REFERENCES user(user_pk) NOT NULL,
-            course_fk       INTEGER REFERENCES user(course_pk) NOT NULL,
+            user_fk         INTEGER REFERENCES account(user_pk) NOT NULL,
+            course_fk       INTEGER REFERENCES course(course_pk) NOT NULL,
             repo            varchar(256),
-            role            varchar(128) not null DEFAULT 'student'
+            role            varchar(128) not null DEFAULT 'student',
             PRIMARY KEY (user_fk, course_fk))"""
         cur.execute(sql)
         conn.commit()
@@ -196,7 +198,7 @@ class UserCourse:
             FROM user_course 
             WHERE user_fk=%s 
             JOIN course ON course.course_pk=user_course.course_fk"""
-        cur.execute(sql, user.user_pk)
+        cur.execute(sql, (user.user_pk,))
         conn.commit()
         res = []
         for i in cur.fetchall():
@@ -237,42 +239,43 @@ class Course:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
         return Course(db_row['course_pk'], course_code)
-
-    @staticmethod
-    def get(course_pk=None, course_code=None, limit=1):
-        sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
-        params = []
-        if course_pk:
-            params += course_pk
-            sql += 'course_pk == %s AND '
-        if course_code:
-            params += course_code
-            sql += 'course_code == %s AND '
-        sql += "1 "
-        if limit:
-            sql += "LIMIT 1"
-        cur.execute(sql, params)
-        conn.commit()
-        if limit == 1:
-            c = cur.fetchone()
-            if not c:
-                return None
-            return Course(c['course_pk'], c['course_code'])
-        # many results
-        res = []
-        for i in cur.fetchall():
-            res.append(Course(i['course_pk'], i['course_code']))
-        return res
-
-    def delete(self):
-        cur.execute("DELETE FROM user WHERE course_pk=%s", (self.course_pk,))  # TODO check if it was successful
-        conn.commit()
-
-    def save(self):
-        cur.execute('UPDATE users SET course_code=%s WHERE user_pk=%s',
-                    self.course_code, self.course_pk)
-        conn.commit()
-        # TODO check if it was successful
+    #
+    # @staticmethod
+    # def get(course_pk=None, course_code=None, limit=1):
+    #     sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
+    #     params = tuple()
+    #     if course_pk:
+    #         params += (course_pk,)
+    #         sql += 'course_pk == %s AND '
+    #     if course_code:
+    #         params += (course_code,)
+    #         sql += 'course_code == %s AND '
+    #     sql += "1 "
+    #     if limit:
+    #         params += (limit,)
+    #         sql += "LIMIT %s"
+    #     cur.execute(sql, params)
+    #     conn.commit()
+    #     if limit == 1:
+    #         c = cur.fetchone()
+    #         if not c:
+    #             return None
+    #         return Course(c['course_pk'], c['course_code'])
+    #     # many results
+    #     res = []
+    #     for i in cur.fetchall():
+    #         res.append(Course(i['course_pk'], i['course_code']))
+    #     return res
+    #
+    # def delete(self):
+    #     cur.execute("DELETE FROM user WHERE course_pk=%s", (self.course_pk,))  # TODO check if it was successful
+    #     conn.commit()
+    #
+    # def save(self):
+    #     cur.execute('UPDATE users SET course_code=%s WHERE user_pk=%s',
+    #                 self.course_code, self.course_pk)
+    #     conn.commit()
+    #     # TODO check if it was successful
 
 
 class Assignment:
@@ -283,9 +286,9 @@ class Assignment:
     @staticmethod
     def table_init():
         sql = """CREATE TABLE IF NOT EXISTS assignment (
-            assignment_pk   SERIAL PRIMARY KEY
+            assignment_pk   SERIAL PRIMARY KEY,
             course_fk       INTEGER REFERENCES course(course_pk),
-            course_code     VARCHAR(128) NOT NULL"""
+            course_code     VARCHAR(128) NOT NULL)"""
         # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
         cur.execute(sql)
         conn.commit()
@@ -305,16 +308,17 @@ class Assignment:
     @staticmethod
     def get(course_pk=None, course_code=None, limit=1):
         sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
-        params = []
+        params = tuple()
         if course_pk:
-            params += course_pk
-            sql += 'course_pk == %s AND '
+            params += (course_pk,)
+            sql += 'course_pk = %s AND '
         if course_code:
-            params += course_code
-            sql += 'course_code == %s AND '
-        sql += "1 "
+            params += (course_code,)
+            sql += 'course_code = %s AND '
+        sql += "TRUE "
         if limit:
-            sql += "LIMIT 1"
+            params += (limit,)
+            sql += "LIMIT %s"
         cur.execute(sql, params)
         conn.commit()
         if limit == 1:
