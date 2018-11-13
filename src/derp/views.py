@@ -6,6 +6,7 @@ from operator import attrgetter
 import os
 
 from derp import app, cur, conn, github
+from derp.account import get_session_user, login_required
 from derp.db_helper import UTC_OFFSET
 
 
@@ -95,7 +96,7 @@ def index():
     if not 'github_username' in session:
         return github.authorize()
     # If the user is already signed in, do the credentials match?
-    if is_login_ok():
+    if get_session_user():
         # User looks alright, let them enter
         return redirect(url_for('dashboard'))
     # Something bad happened... Assume evil.
@@ -103,11 +104,8 @@ def index():
 
 # display dashboard
 @app.route('/dashboard', methods=['GET'])
+@login_required
 def dashboard():
-    if not is_login_ok():
-        msg = "login failure: something is wrong with the session ... try logging in again"
-        return redirect(url_for("logout", logout_message = msg))
-
 
     # put the user's id from the db into the session
     #   NOTE: all other methods assume that the user_pk has been put into the session
@@ -134,11 +132,8 @@ def dashboard():
 
 # display profile
 @app.route('/profile', methods=['GET', 'POST'])
+@login_required
 def profile():
-    if not is_login_ok():
-        msg = "login failure: something is wrong with the session ... try logging in again"
-        return redirect(url_for("logout", logout_message = msg))
-
     # if we are getting a POST, handle it
     if request.method == 'POST':
 
