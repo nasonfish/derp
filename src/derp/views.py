@@ -85,41 +85,23 @@ def check_pending_reviews():
 # Set "homepage" to index.html
 @app.route('/')
 @app.route('/index')
+@login_required
 def index():
     # Does the session have github credentials? If not go to authentication.
-    if not 'github_username' in session:
-        return github.authorize()
+    #if not 'github_username' in session:
+    #    return github.authorize()
     # If the user is already signed in, do the credentials match?
-    if get_session_user():
+    #if get_session_user():
         # User looks alright, let them enter
-        return redirect(url_for('dashboard'))
+    return redirect(url_for('dashboard'))
     # Something bad happened... Assume evil.
-    return redirect(url_for('logout'))
+    #return redirect(url_for('logout'))
+
 
 # display dashboard
 @app.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-
-    # put the user's id from the db into the session
-    #   NOTE: all other methods assume that the user_pk has been put into the session
-    if 'user_pk' not in session:
-        SQL = "SELECT user_pk FROM users WHERE duck_id = %s;"
-        data = (session['duck_id'],)
-        cur.execute(SQL, data)
-        user_pk = cur.fetchone()[0]
-        app.logger.debug("setting user_pk: " + str(user_pk))
-        session['user_pk'] = user_pk
-
-    # check if the user has submitted a daily status update
-    check_daily()
-
-    # check if the user has submitted a weekly status update
-    check_weekly()
-
-    # check for pending code reviews
-    check_pending_reviews()
-
     # display the dashboard page
     return render_template('dashboard.html')
 

@@ -39,7 +39,7 @@ def login():
         else:
             app.logger.debug("user found ... redirecting to authorization")
             return github.authorize()
-    return redirect(url_for("index"))
+    return render_template("index.html")
 
 
 # github access token getter
@@ -93,14 +93,8 @@ def signup():
         github_username = session['github_username']
         repo = request.form['repo']
         email = request.form['email']
-        duck_id = request.form['duck_id']
-        cur.execute("SELECT role_pk FROM roles WHERE role_name = %s;", ('developer',))
-        developer_fk = cur.fetchone()[0]
-        app.logger.debug("got developer pk from roles table: {}".format(developer_fk))
-        SQL = "INSERT INTO users (github_username, duck_id, email, repo, role_fk) VALUES (%s, %s, %s, %s, %s);"
-        data = (github_username, duck_id, email, repo, developer_fk)
-        cur.execute(SQL, data)
-        conn.commit()
+        student_id = request.form['duck_id']  # TODO we are not ducks
+        User.create(github_username, student_id, email)
         return redirect(url_for("index"))
 
 

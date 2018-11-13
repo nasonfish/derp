@@ -37,11 +37,11 @@ class DatabaseError(Exception):
 
 
 class Session:
-    def __init__(self, session_pk, user, remote_addr, session_challenge):
+    def __init__(self, session_pk, user, remote_addr, challenge):
         self.session_pk = session_pk
         self.user = user
         self.remote_addr = remote_addr
-        self.session_challenge = session_challenge
+        self.challenge = challenge
 
     @staticmethod
     def new_session(user):
@@ -56,12 +56,14 @@ class Session:
         if not db_row:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
-        return Session(db_row['session_pk'], user, remote_addr, challenge)
+        session['challenge'] = challenge
+        session['student_id'] = user.student_id
+        return Session(db_row[0], user, remote_addr, challenge)
 
     @staticmethod
     def get_user():
-        sql = """SELECT user.* FROM session 
-            LEFT JOIN user ON user_fk=user_pk 
+        sql = """SELECT account.user_pk, account.github_username, account.student_id, account.email FROM session 
+            LEFT JOIN account ON user_fk=user_pk 
             WHERE challenge=%s 
                 AND student_id=%s 
                 AND remote_addr=%s"""
@@ -72,7 +74,7 @@ class Session:
         db_row = cur.fetchone()
         if not db_row:
             return None
-        return User(db_row['user_pk'], db_row['github_username'], db_row['student_id'], db_row['email'])
+        return User(db_row[0], db_row[1], db_row[2], db_row[3])
 
     @staticmethod
     def table_init():
@@ -107,19 +109,19 @@ class User:
 
     @staticmethod
     def create(github_username, student_id, email):
-        sql = """INSERT INTO account (github_username, student_id, email, repo) 
-        VALUES (%s, %s, %s, %s) RETURNING user_pk"""
+        sql = """INSERT INTO account (github_username, student_id, email) 
+        VALUES (%s, %s, %s) RETURNING user_pk"""
         cur.execute(sql, (github_username, student_id, email))
         conn.commit()
         db_row = cur.fetchone()
         if not db_row:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
-        return User(db_row['user_pk'], github_username, student_id, email)
+        return User(db_row[0], github_username, student_id, email)
 
     @staticmethod
     def get(user_pk=None, github_username=None, student_id=None, email=None, limit=1):
-        sql = 'SELECT (user_pk, github_username, student_id, email) FROM account WHERE '
+        sql = 'SELECT user_pk, github_username, student_id, email FROM account WHERE '
         params = tuple()
         if user_pk:
             params += (user_pk,)
@@ -143,11 +145,11 @@ class User:
             u = cur.fetchone()
             if not u:
                 return None
-            return User(u['user_pk'], u['github_username'], u['student_id'], u['email'])
+            return User(u[0], u[1], u[2], u[3])
         # many results
         res = []
         for u in cur.fetchall():
-            res.append(User(u['user_pk'], u['github_username'], u['student_id'], u['email']))
+            res.append(User(u[0], u[1], u[2], u[3]))
         return res
 
     def get_courses(self):
@@ -202,8 +204,8 @@ class UserCourse:
         conn.commit()
         res = []
         for i in cur.fetchall():
-            course = Course(i['course_pk'], i['course_code'])
-            res.append(UserCourse(user, course, i['repo'], i['role']))
+            course = Course(i[2], i[3])
+            res.append(UserCourse(user, course, i[0], i[1]))
         return res
 
 """
@@ -238,7 +240,7 @@ class Course:
         if not db_row:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
-        return Course(db_row['course_pk'], course_code)
+        return Course(db_row[0], course_code)
     #
     # @staticmethod
     # def get(course_pk=None, course_code=None, limit=1):
@@ -303,11 +305,11 @@ class Assignment:
         if not db_row:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
-        return Course(db_row['course_pk'], course_code)
+        return Course(db_row[0], course_code)
 
     @staticmethod
     def get(course_pk=None, course_code=None, limit=1):
-        sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
+        sql = 'SELECT (course_pk, course_code) FROM course WHERE '
         params = tuple()
         if course_pk:
             params += (course_pk,)
@@ -325,11 +327,11 @@ class Assignment:
             c = cur.fetchone()
             if not c:
                 return None
-            return Course(c['course_pk'], c['course_code'])
+            return Course(c[0], c[1])
         # many results
         res = []
         for i in cur.fetchall():
-            res.append(Course(i['course_pk'], i['course_code']))
+            res.append(Course(i[0], i[1]))
         return res
 
     def delete(self):
