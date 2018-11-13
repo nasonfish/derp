@@ -1,11 +1,13 @@
 from derp import app
 from derp.account import login_required, get_session_user
+from derp.course import course
 
 
-@app.route('/')
+@course.route('/')
 @login_required
 def index():
     user = get_session_user()
+
 
 #
 # # display daily submission / report page
