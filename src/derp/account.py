@@ -16,7 +16,8 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not get_session_user():
             return redirect(url_for("login"))
-        return decorated_function(*args, **kwargs)
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 # get username from homepage input form
