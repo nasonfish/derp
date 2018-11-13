@@ -1,14 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash
 import datetime
-from ast import literal_eval
-from operator import attrgetter
-
-import os
 
 from derp import app, cur, conn, github
 from derp.account import get_session_user, login_required
-from derp.db_helper import UTC_OFFSET
-
 
 # jinja2 format functions
 @app.template_filter('monday')
