@@ -188,18 +188,18 @@ class UserCourse:
     @staticmethod
     def enroll(user, course, repo=None, role=None):
         sql = """INSERT INTO user_course (user_fk, course_fk, repo, role) VALUES (%s, %s, %s, %s)"""
-        cur.execute(sql, user.user_pk, course.course_pk, repo, role)
+        cur.execute(sql, (user.user_pk, course.course_pk, repo, role))
         conn.commit()
 
     @staticmethod
-    def user_courses(self, user):
+    def user_courses(user):
         sql = """SELECT user_course.repo AS repo, 
                 user_course.role AS role, 
                 course.course_pk AS course_pk, 
                 course.course_code AS course_code
             FROM user_course 
-            WHERE user_fk=%s 
-            JOIN course ON course.course_pk=user_course.course_fk"""
+            JOIN course ON course.course_pk=user_course.course_fk
+            WHERE user_fk=%s"""
         cur.execute(sql, (user.user_pk,))
         conn.commit()
         res = []

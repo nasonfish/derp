@@ -1,12 +1,23 @@
 from derp import app
 from derp.account import login_required, get_session_user
 from derp.course import course
+from derp.db_helper import UserCourse, Course
+
+from flask import render_template
 
 
+# GET /course/
 @course.route('/')
 @login_required
 def index():
     user = get_session_user()
+    cp344 = Course.create("CP344")
+    UserCourse.enroll(user, cp344, "git@github.com:nasonfish/cp344.git", "student")
+
+    courses = UserCourse.user_courses(user)
+    return render_template("course/list.html", courses=courses)
+
+
 
 
 #
