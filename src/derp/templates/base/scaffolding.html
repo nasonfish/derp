@@ -1,0 +1,38 @@
+{% extends "base/empty.html" %}
+{% block body %}
+
+<div class="row container-header">
+<div class="col-lg-4">
+    <img src="{{ url_for('static', filename='images/osnap_logo_150x150.png') }}" class="img-default" width="75" height="75">
+</div>
+
+<div class="col-lg-4 text-center derp-center">
+    <img src="{{ url_for('static', filename='images/derp_banner.png') }}" class="img-default">
+</div>
+</div> <!-- end row -->
+
+<br>
+
+<nav class="navbar navbar-default" id="nav">
+  <div class="container-fluid">
+    <ul class="nav navbar-nav">
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <form action="{{url_for('logout')}}" method="GET"><button class="btn btn-danger navbar-btn" href="{{url_for('logout')}}">LOG OUT</button></form>
+    </ul>
+  </div>
+</nav>
+
+<!-- flashed warnings -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+{% endblock %}
