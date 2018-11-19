@@ -152,8 +152,8 @@ class User:
             res.append(User(u[0], u[1], u[2], u[3]))
         return res
 
-    def get_courses(self):
-        return UserCourse
+    def courses(self):
+        return UserCourse.user_courses(self)
 
     def delete(self):
         cur.execute("DELETE FROM account WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
@@ -241,34 +241,48 @@ class Course:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
         return Course(db_row[0], course_code)
-    #
-    # @staticmethod
-    # def get(course_pk=None, course_code=None, limit=1):
-    #     sql = 'SELECT (user_pk, github_username, student_id, email) FROM user WHERE '
-    #     params = tuple()
-    #     if course_pk:
-    #         params += (course_pk,)
-    #         sql += 'course_pk == %s AND '
-    #     if course_code:
-    #         params += (course_code,)
-    #         sql += 'course_code == %s AND '
-    #     sql += "1 "
-    #     if limit:
-    #         params += (limit,)
-    #         sql += "LIMIT %s"
-    #     cur.execute(sql, params)
-    #     conn.commit()
-    #     if limit == 1:
-    #         c = cur.fetchone()
-    #         if not c:
-    #             return None
-    #         return Course(c['course_pk'], c['course_code'])
-    #     # many results
-    #     res = []
-    #     for i in cur.fetchall():
-    #         res.append(Course(i['course_pk'], i['course_code']))
-    #     return res
-    #
+
+    @staticmethod
+    def get(course_pk=None, course_code=None, limit=1):
+        sql = 'SELECT course_pk, course_code FROM course WHERE '
+        params = tuple()
+        if course_pk:
+            params += (course_pk,)
+            sql += 'course_pk = %s AND '
+        if course_code:
+            params += (course_code,)
+            sql += 'course_code = %s AND '
+        sql += "TRUE "
+        if limit:
+            params += (limit,)
+            sql += "LIMIT %s"
+        cur.execute(sql, params)
+        conn.commit()
+
+        if limit == 1:
+            c = cur.fetchone()
+            if not c:
+                return None
+            return Course(c[0], c[1])
+        # many results
+        res = []
+        for i in cur.fetchall():
+            res.append(Course(i[0], i[1]))
+        return res
+
+    def get_enrollment(self, user):
+        sql = """SELECT user_course.repo AS repo, 
+                user_course.role AS role
+                FROM user_course
+                WHERE course_fk=%s
+                AND user_fk=%s"""
+        cur.execute(sql, (self.course_pk, user.user_pk))
+        conn.commit()
+        c = cur.fetchone()
+        if not c:
+            return None
+        return UserCourse(user, self, c[0], c[1]) # TODO should this be a function of UserCourse?
+
     # def delete(self):
     #     cur.execute("DELETE FROM user WHERE course_pk=%s", (self.course_pk,))  # TODO check if it was successful
     #     conn.commit()

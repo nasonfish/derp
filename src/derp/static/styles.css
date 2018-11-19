@@ -88,3 +88,8 @@ tr.even {
     word-wrap: normal;
     word-break: normal;
 }
+
+.content{
+    margin-left: 12%;
+    margin-right: 12%;
+}

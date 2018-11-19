@@ -1,52 +1,27 @@
 {% extends "base/scaffolding.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-lg-12">
-    <h1>hello, {{ user.github_username }}!</h1>
-    </div>
-</div>
-
-<div class="row">
-
-    <!-- daily update -->
-    <div class="col-lg-4">
-        <label> Daily Status: </label>
-        {% if session.daily_completed %}
-        <p style="color:green">COMPLETE</p>
-        {% else %}
-        <p style="color:red">incomplete</p>
-        {% endif %}
-    </div>
-
-
-</div>
-<!-- /row -->
-
-<div class="row">
-
-    <!-- weekly update -->
-    <div class="col-lg-4">
-        <label> Weekly Status: </label>
-        {% if session.weekly_completed %}
-        <p style="color:green">COMPLETE</p>
-        {% else %}
-        <p style="color:red">incomplete</p>
-        {% endif %}
-    </div>
-
-
-</div>
-<!-- /row -->
-
-<div class="row">
-
-    <!-- weekly update -->
-    <div class="col-lg-4">
-        <p><label> Pending Code Reviews:</label> {{ session.pending_reviews|length }}</p>
-    </div>
-
-
-</div>
+<h1>hello, {{ user.github_username }}!</h1>
+<h2>Classes enrolled: </h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>View</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for course in user.courses() %}
+        <tr>
+            <td>{{ course.code }}</td>
+            <td>
+                <a href="{{ url_for('course.view', id=course.course_pk) }}">
+                    <button type="button" class="btn btn-info">View</button>
+                </a>
+            </td>
+        </tr>
+    </tbody>
+    {% endfor %}
+</table>
 <!-- /row -->
 {% endblock %}

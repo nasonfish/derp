@@ -3,7 +3,7 @@ from derp.account import login_required, get_session_user
 from derp.course import course
 from derp.db_helper import UserCourse, Course
 
-from flask import render_template
+from flask import render_template, abort
 
 
 # GET /course/
@@ -18,6 +18,15 @@ def index():
     return render_template("course/list.html", courses=courses)
 
 
+@course.route('/<id>')
+@login_required
+def view(id):
+    course = Course.get(id)
+    user = get_session_user()
+    user_course = course.get_enrollment(user)
+    if not user_course:
+        return abort(403)
+    return render_template("view.html", user_course=user_course)
 
 
 #
