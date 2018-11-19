@@ -3,7 +3,7 @@ from derp.account import login_required, get_session_user
 from derp.course import course
 from derp.db_helper import UserCourse, Course
 
-from flask import render_template, abort
+from flask import render_template, abort, request
 
 
 # GET /course/
@@ -11,9 +11,6 @@ from flask import render_template, abort
 @login_required
 def index():
     user = get_session_user()
-    cp344 = Course.create("CP344")
-    UserCourse.enroll(user, cp344, "git@github.com:nasonfish/cp344.git", "student")
-
     courses = UserCourse.user_courses(user)
     return render_template("course/list.html", courses=courses)
 
@@ -21,12 +18,23 @@ def index():
 @course.route('/<id>')
 @login_required
 def view(id):
-    course = Course.get(id)
     user = get_session_user()
+    course = Course.get(id)
+    if not course:
+        return abort(404)
     user_course = course.get_enrollment(user)
     if not user_course:
         return abort(403)
-    return render_template("view.html", user_course=user_course)
+    return render_template("course/view.html", user_course=user_course)
+
+
+@course.route('/create', methods=['GET', 'POST'])
+@login_required
+def create():
+    if request.method == 'POST':
+        pass
+    return render_template('course/create.html')
+
 
 
 #
