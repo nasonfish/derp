@@ -15,20 +15,15 @@
 
         <div class="row">
             <div class="col-lg-12">
-                <p> <label>GitHub Username:</label> {{session.github_username}} </p>
-                <p> <label>Role:</label> developer </p>
+                <p> <label>GitHub Username:</label> {{ user.github_username }} </p>
                 <form action="{{url_for('signup')}}" method="POST">
                     <div class="input-group" style="width:340px">
-                        <label>UO Duck ID: </label>
-			<input class="form-control input-lg" placeholder="UO Duck Id" name="duck_id" value="">
-                    </div>
-                    <div class="input-group" style="width:340px">
-                        <label> CIS 322 GitHub Repo URL: </label>
-                        <input class="form-control input-lg" placeholder="enter your repo url" name="repo">
+                        <label>Student ID: </label>
+			<input class="form-control input-lg" placeholder="Student Login" name="student_id" value="">
                     </div>
                     <div class="input-group" style="width:340px">
                         <label> Email: </label>
-                        <input class="form-control input-lg" placeholder="duck_id@uoregon.edu" type="email" name="email">
+                        <input class="form-control input-lg" placeholder="student_id@coloradocollege.edu" type="email" name="email">
                     </div>
                     <div class="input-group" style="width:340px">
                         <button type="submit" class="btn btn-success">Create User</button>

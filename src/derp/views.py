@@ -21,44 +21,6 @@ def format_date(dt):
     """
     return dt.date()
 
-def check_daily():
-    """
-    Check whether the user has submitted a daily status today, where 'today' is defined
-    as the 24-hour period stretching from the prior 0600 to the next 0600.
-    """
-    # Select only the records for today
-    SQL = """SELECT create_dt::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'PST'
-FROM dailies
-WHERE date_trunc('day',(now()-interval '6 hours')::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'PST') = date_trunc('day',(create_dt-interval '6 hours')::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'PST')
-and user_fk=%s"""
-    data = (session['user_pk'],)
-    cur.execute(SQL, data)
-    db_row = cur.fetchone()
-    if db_row is None:
-        session['daily_completed'] = False
-    else:
-        session['daily_completed'] = True
-
-
-def check_weekly():
-    """
-    Check whether the user has submitted a weekly status this week, where 'this week'
-    is defined as the period stretching from the prior 0600 Monday to the next 0600 Monday.
-    """
-    # Select only the records for this week
-    SQL = """SELECT create_dt::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'PST'
-FROM weeklies
-WHERE date_trunc('week',(now()-interval '6 hours')::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'PST') = date_trunc('week',(create_dt-interval '6 hours')::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'PST')
-and user_fk=%s"""
-    data = (session['user_pk'],)
-    cur.execute(SQL, data)
-    db_row = cur.fetchone()
-    if db_row is None:
-        session['weekly_completed'] = False
-    else:
-        session['weekly_completed'] = True
-
-
 def check_pending_reviews():
     """
     Check whether the user has pending code reviews to complete. Puts the pending review
@@ -87,22 +49,12 @@ def check_pending_reviews():
 @app.route('/index')
 @login_required
 def index():
-    # Does the session have github credentials? If not go to authentication.
-    #if not 'github_username' in session:
-    #    return github.authorize()
-    # If the user is already signed in, do the credentials match?
-    #if get_session_user():
-        # User looks alright, let them enter
     return redirect(url_for('dashboard'))
-    # Something bad happened... Assume evil.
-    #return redirect(url_for('logout'))
 
 
-# display dashboard
 @app.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-    # display the dashboard page
     return render_template('dashboard.html')
 
 
@@ -112,24 +64,16 @@ def dashboard():
 def profile():
     # if we are getting a POST, handle it
     if request.method == 'POST':
-
+        # TODO this needs to update information, but only related to the user and not to any classes.
+        pass
         # handle profile info submission
-        if 'repo' in request.form and 'email' in request.form:
-            repo_msg = request.form['repo']
-            email_msg = request.form['email']
+        #if 'repo' in request.form and 'email' in request.form:
+        #    repo_msg = request.form['repo']
+        #    email_msg = request.form['email']
 
-            SQL = "UPDATE users SET repo=%s, email=%s WHERE (user_pk=%s);"
-            data = (repo_msg, email_msg, session['user_pk'])
-            cur.execute(SQL, data)
-            conn.commit()
-
-    # get the user's info from the db
-    SQL = "SELECT github_username, duck_id, email, repo FROM users WHERE duck_id = %s;"
-    data = (session['duck_id'],)
-    cur.execute(SQL, data)
-    res = cur.fetchone()
-    session['user_info'] = dict(zip(('github_username', 'duck_id', 'email', 'repo'), res))
-    app.logger.debug("setting user_info: {}".format(str(session['user_info'])))
-
+        #    SQL = "UPDATE users SET repo=%s, email=%s WHERE (user_pk=%s);"
+        #    data = (repo_msg, email_msg, session['user_pk'])
+        #    cur.execute(SQL, data)
+        #    conn.commit()
     # in any event, display the profile page
     return render_template('profile.html')

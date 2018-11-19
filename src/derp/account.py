@@ -91,9 +91,8 @@ def signup():
     #   note: default role is developer
     if request.method == 'POST':
         github_username = session['github_username']
-        repo = request.form['repo']
         email = request.form['email']
-        student_id = request.form['duck_id']  # TODO we are not ducks
+        student_id = request.form['student_id']
         User.create(github_username, student_id, email)
         return redirect(url_for("index"))
 

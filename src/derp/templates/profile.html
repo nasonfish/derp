@@ -5,17 +5,19 @@
 
             <!-- profile information -->
             <div class="col-lg-12">
-                <p> <label>UO Username:</label> {{session.duck_id}} </p>
-                <p> <label>GitHub Username:</label> {{(session.user_info).github_username}} </p>
-                <p> <label>Role:</label> developer </p>
+                <p> <label>Student ID:</label> {{ user.student_id}} </p>
+                <p> <label>GitHub Username:</label> {{ user.github_username }} </p>
+                <!-- <p> <label>Role:</label> developer </p> this is class-specific now -->
                 <form action="{{url_for('profile')}}" method="POST">
+                    <!--
                     <div class="input-group" style="width:340px">
                         <label> CIS 322 GitHub Repo URL: </label>
                         <input class="form-control input-lg" value="{{(session.user_info).repo}}" name="repo">
                     </div>
+                    -->
                     <div class="input-group" style="width:340px">
                         <label> Email: </label>
-                        <input class="form-control input-lg" value="{{(session.user_info).email}}" type="email" name="email">
+                        <input class="form-control input-lg" value="{{ user.email }}" type="email" name="email">
                     </div>
                     <div class="input-group" style="width:340px">
                         <button type="submit" class="btn btn-success">Update User Info</button>
