@@ -21,4 +21,5 @@ github = GitHub(app)
 conn = psycopg2.connect(app.config['DB_LOCATION'])
 cur = conn.cursor()
 
+import derp.util
 import derp.views
