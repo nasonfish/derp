@@ -11,11 +11,8 @@ notes:
 2) DB_LOCATION is a string that can be passed to psycopg2 to connect to the db
 """
 
-#import os
-#import uuid
-
 HOST = "TODO"  # string
-PORT= TODO  # int
+PORT = TODO  # int
 DEBUG = False  # boolean, should be False for deployment
 SECRET_KEY = "TODO"  # string, see note 1 above
 GITHUB_CLIENT_ID = "TODO"  # string, this need not be protected
