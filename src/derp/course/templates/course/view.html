@@ -1,5 +1,11 @@
 {% extends "base/scaffolding.html" %}
 {% block title %}View Course {{ user_course.course.code }}{% endblock %}
 {% block content %}
-<p>Course code {{ user_course.course.code }}</p>
+<ul>
+    <li>Course Code: {{ user_course.course.code }}</li>
+    <li>Block: {{ user_course.course.block }}</li>
+    <li>Year: {{ user_course.course.year }}</li>
+    <li>Repository: {{ user_course.repo }}</li>
+    <li>Role: {{ user_course.role }}</li>
+</ul>
 {% endblock %}
