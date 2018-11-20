@@ -22,4 +22,7 @@ conn = psycopg2.connect(app.config['DB_LOCATION'])
 cur = conn.cursor()
 
 import derp.util
+
+app.jinja_env.globals['breadcrumb'] = derp.util.breadcrumb
+
 import derp.views

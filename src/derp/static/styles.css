@@ -89,7 +89,20 @@ tr.even {
     word-break: normal;
 }
 
-.content{
+.body{
     margin-left: 7%;
     margin-right: 7%;
+}
+
+.nobefore:before{
+  content: none !important; /* this is used for pull-right navbar "breadcrumb" elements */
+}
+
+.breadcrumb{
+    font-size: 13pt;
+    margin-bottom: 0;
+}
+
+.navbar{
+    min-height: 0;
 }
