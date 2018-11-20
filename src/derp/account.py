@@ -116,6 +116,3 @@ def logout(logout_message = None):
     else:
         session.clear()
     return render_template('logout.html')
-
-
-

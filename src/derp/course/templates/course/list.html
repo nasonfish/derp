@@ -1,28 +1,9 @@
 {% extends "base/scaffolding.html" %}
+{% block title %}List Courses{% endblock %}
 {% block content %}
-<body>
-    <div class="container-full-left">
-        <div class="row">
-
-            <!-- daily update -->
-            <!-- end daily update column -->
-
-            <!-- daily report -->
-            <div class="col-lg-6">
-
-
 <ul>
-{% for i in user.courses() %}
-    <li>Course : {{ i.course.course_pk }} {{ i.course.code }} {{ i.repo }} {{ i.role }}</li>
-{% endfor %}
+    {% for i in user.courses() %}
+        <li>Course : {{ i.course.course_pk }} {{ i.course.code }} {{ i.repo }} {{ i.role }}</li>
+    {% endfor %}
 </ul>
-
-            </div>
-            <!-- end daily report column -->
-
-        </div>
-        <!-- /row -->
-
-    </div>
-    <!-- /container full -->
 {% endblock %}
