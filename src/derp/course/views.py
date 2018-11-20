@@ -3,16 +3,14 @@ from derp.account import login_required, get_session_user, permission_required
 from derp.course import course
 from derp.db_helper import UserCourse, Course, DerpDB
 
-from flask import render_template, abort, request
+from flask import render_template, abort, request, flash, redirect, url_for
 
 
 # GET /course/
 @course.route('/')
 @login_required
 def index():
-    user = get_session_user()
-    courses = UserCourse.user_courses(user)
-    return render_template("course/list.html", courses=courses)
+    return render_template("course/list.html")
 
 
 @course.route('/<id>')
@@ -29,7 +27,21 @@ def view(id):
 @permission_required('course:create')
 def create():
     if request.method == 'POST':
-        pass
+        block = request.form['block']
+        if len(block) > 1:
+            flash("Block must be a one-character identifier, such as 'A' or '1'", 'danger')
+            return render_template('course/create.html')
+        year = request.form['year']
+        try:
+            int(year)
+        except ValueError:
+            flash("Year must be a number.", 'danger')
+            return render_template('course/create.html')
+        code = request.form['code']
+        course = Course.create(code, block, year)
+        UserCourse.enroll(get_session_user(), course, None, 'professor')
+        flash('Course successfully created', 'success')
+        return redirect(url_for('.view', id=course.course_pk))
     return render_template('course/create.html')
 
 

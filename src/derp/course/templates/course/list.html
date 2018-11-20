@@ -12,7 +12,7 @@
 
 
 <ul>
-{% for i in courses %}
+{% for i in user.courses() %}
     <li>Course : {{ i.course.course_pk }} {{ i.course.code }} {{ i.repo }} {{ i.role }}</li>
 {% endfor %}
 </ul>

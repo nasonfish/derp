@@ -46,7 +46,9 @@ class DerpDB:
         sql = """SELECT user_course.repo AS repo, 
                 user_course.role AS role, 
                 course.course_pk AS course_pk, 
-                course.course_code AS course_code
+                course.code AS code,
+                course.block AS block,
+                course.year as year
             FROM user_course 
             JOIN course ON course.course_pk=user_course.course_fk
             WHERE user_fk=%s AND course_pk=%s
@@ -54,7 +56,9 @@ class DerpDB:
         cur.execute(sql, (user.user_pk, course_id))
         conn.commit()
         i = cur.fetchone()
-        course = Course(i[2], i[3])
+        if not i:
+            return None
+        course = Course(i[2], i[3], i[4], i[5])
         return UserCourse(user, course, i[0], i[1])
 
     @staticmethod
@@ -259,7 +263,9 @@ class UserCourse:
         sql = """SELECT user_course.repo AS repo, 
                 user_course.role AS role, 
                 course.course_pk AS course_pk, 
-                course.course_code AS course_code
+                course.code AS code,
+                course.block AS block,
+                course.year AS year
             FROM user_course 
             JOIN course ON course.course_pk=user_course.course_fk
             WHERE user_fk=%s"""
@@ -267,7 +273,7 @@ class UserCourse:
         conn.commit()
         res = []
         for i in cur.fetchall():
-            course = Course(i[2], i[3])
+            course = Course(i[2], i[3], i[4], i[5])
             res.append(UserCourse(user, course, i[0], i[1]))
         return res
 
@@ -279,42 +285,53 @@ Course:
   code
 """
 class Course:
-    def __init__(self, course_pk, course_code):
+    def __init__(self, course_pk, code, block, year):
         self.course_pk = course_pk
-        self.course_code = course_code
+        self.code = code
+        self.block = block
+        self.year = year
 
     @staticmethod
     def table_init():
         sql = """CREATE TABLE IF NOT EXISTS course (
-            course_pk       SERIAL PRIMARY KEY,
-            course_code     VARCHAR(128) NOT NULL)"""
+                course_pk       SERIAL PRIMARY KEY,
+                code            VARCHAR(128) NOT NULL,
+                block           CHAR(1) NOT NULL,
+                year            INTEGER NOT NULL
+            )"""
         # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
         cur.execute(sql)
         conn.commit()
 
 
     @staticmethod
-    def create(course_code):
-        sql = """INSERT INTO course (course_code) 
-        VALUES (%s) RETURNING course_pk"""
-        cur.execute(sql, (course_code,))
+    def create(code, block, year):
+        sql = """INSERT INTO course (code, block, year) 
+        VALUES (%s, %s, %s) RETURNING course_pk"""
+        cur.execute(sql, (code, block, year))
         conn.commit()
         db_row = cur.fetchone()
         if not db_row:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
-        return Course(db_row[0], course_code)
+        return Course(db_row[0], code, block, year)
 
     @staticmethod
-    def get(course_pk=None, course_code=None, limit=1):
-        sql = 'SELECT course_pk, course_code FROM course WHERE '
+    def get(course_pk=None, code=None, block=None, year=None, limit=1):
+        sql = 'SELECT course_pk, code, block, year FROM course WHERE '
         params = tuple()
         if course_pk:
             params += (course_pk,)
             sql += 'course_pk = %s AND '
-        if course_code:
-            params += (course_code,)
-            sql += 'course_code = %s AND '
+        if code:
+            params += (code,)
+            sql += 'code = %s AND '
+        if block:
+            params += (block,)
+            sql += 'block = %s AND '
+        if year:
+            params += (year,)
+            sql += 'year = %s AND '
         sql += "TRUE "
         if limit:
             params += (limit,)
@@ -326,11 +343,11 @@ class Course:
             c = cur.fetchone()
             if not c:
                 return None
-            return Course(c[0], c[1])
+            return Course(*c)
         # many results
         res = []
         for i in cur.fetchall():
-            res.append(Course(i[0], i[1]))
+            res.append(*i)
         return res
 
     def get_enrollment(self, user):
@@ -358,20 +375,22 @@ class Course:
 
 
 class Assignment:
+
+    """
+    TODO
     def __init__(self, course_pk, course_code):
         self.course_pk = course_pk
         self.course_code = course_code
-
+    """
     @staticmethod
     def table_init():
         sql = """CREATE TABLE IF NOT EXISTS assignment (
             assignment_pk   SERIAL PRIMARY KEY,
-            course_fk       INTEGER REFERENCES course(course_pk),
-            course_code     VARCHAR(128) NOT NULL)"""
+            course_fk       INTEGER REFERENCES course(course_pk))"""
         # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
         cur.execute(sql)
         conn.commit()
-
+    '''
     @staticmethod
     def create(course_code):
         sql = """INSERT INTO course (course_code) 
@@ -420,7 +439,7 @@ class Assignment:
                     self.course_code, self.course_pk)
         conn.commit()
         # TODO check if it was successful
-
+    '''
 
 """
 CREATE TABLE dailies (
