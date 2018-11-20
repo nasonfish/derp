@@ -6,6 +6,8 @@ from flask import request, session
 import base64
 import random
 
+from psycopg2 import IntegrityError
+
 # globals
 
 # note: this is a gross hack for converting utc to local ... platform dependent and incorrect
@@ -35,6 +37,67 @@ class DatabaseError(Exception):
 
 # TODO some sort of class registration which will find all of the tables and init them
 
+
+class DerpDB:
+    # a collection of static methods which return instances of the above objects.
+    # ideally the functions inside of these classes will be moved here.
+    @staticmethod
+    def user_course(user, course_id):
+        sql = """SELECT user_course.repo AS repo, 
+                user_course.role AS role, 
+                course.course_pk AS course_pk, 
+                course.course_code AS course_code
+            FROM user_course 
+            JOIN course ON course.course_pk=user_course.course_fk
+            WHERE user_fk=%s AND course_pk=%s
+            LIMIT 1"""
+        cur.execute(sql, (user.user_pk, course_id))
+        conn.commit()
+        i = cur.fetchone()
+        course = Course(i[2], i[3])
+        return UserCourse(user, course, i[0], i[1])
+
+    @staticmethod
+    def get_user_permission(permission):
+        sql = """SELECT account.user_pk, account.github_username, account.student_id, account.email FROM session 
+            LEFT JOIN account ON session.user_fk=user_pk 
+            INNER JOIN privilege ON privilege.user_fk=user_pk
+            WHERE challenge=%s 
+                AND student_id=%s 
+                AND remote_addr=%s
+                AND privilege.name=%s"""
+        if not session or 'challenge' not in session or 'student_id' not in session or not request:
+            return None
+        cur.execute(sql, (session['challenge'], session['student_id'], request.remote_addr, permission))
+        conn.commit()
+        db_row = cur.fetchone()
+        if not db_row:
+            return None
+        return User(db_row[0], db_row[1], db_row[2], db_row[3])
+
+    @staticmethod
+    def add_permissions(user, permissions):
+        for permission in permissions:
+            sql = """INSERT INTO privilege (user_fk, name) VALUES (%s, %s)"""
+            try:
+                cur.execute(sql, (user.user_pk, permission))
+            except IntegrityError:
+                pass  # this means they already had the permission. we can safely ignore
+        conn.commit()
+
+
+class Privilege:
+    @staticmethod
+    def table_init():
+        sql = """
+        CREATE TABLE IF NOT EXISTS privilege (
+            user_fk         INTEGER NOT NULL REFERENCES account(user_pk),
+            name            VARCHAR(128) NOT NULL,
+            PRIMARY KEY (user_fk, name)
+        )
+        """
+        cur.execute(sql)
+        conn.commit()
 
 class Session:
     def __init__(self, session_pk, user, remote_addr, challenge):

@@ -1,8 +1,8 @@
 from functools import wraps
 from derp import cur, conn, app, github
-from flask import session, redirect, url_for, request, flash, render_template
+from flask import session, redirect, url_for, request, flash, render_template, abort
 
-from derp.db_helper import Session, User
+from derp.db_helper import Session, User, DerpDB
 
 # helper functions
 def get_session_user():
@@ -18,6 +18,16 @@ def login_required(f):
             return redirect(url_for("login"))
         return f(*args, **kwargs)
     return decorated_function
+
+def permission_required(permission_name):
+    def wrapper(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not DerpDB.get_user_permission(permission_name):
+                return abort(403)
+            return f(*args, **kwargs)
+        return decorated_function
+    return wrapper
 
 
 # get username from homepage input form

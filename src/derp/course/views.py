@@ -1,7 +1,7 @@
 from derp import app
-from derp.account import login_required, get_session_user
+from derp.account import login_required, get_session_user, permission_required
 from derp.course import course
-from derp.db_helper import UserCourse, Course
+from derp.db_helper import UserCourse, Course, DerpDB
 
 from flask import render_template, abort, request
 
@@ -19,17 +19,14 @@ def index():
 @login_required
 def view(id):
     user = get_session_user()
-    course = Course.get(id)
-    if not course:
-        return abort(404)
-    user_course = course.get_enrollment(user)
+    user_course = DerpDB.user_course(user, id)
     if not user_course:
-        return abort(403)
+        return abort(404)
     return render_template("course/view.html", user_course=user_course)
 
 
 @course.route('/create', methods=['GET', 'POST'])
-@login_required
+@permission_required('course:create')
 def create():
     if request.method == 'POST':
         pass
