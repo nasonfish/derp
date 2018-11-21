@@ -1,7 +1,7 @@
 from derp import app
 from derp.account import login_required, get_session_user, permission_required
 from derp.course import course
-from derp.db_helper import UserCourse, Course, DerpDB
+from derp.db_helper import UserCourse, Course, DerpDB, DatabaseError
 
 from flask import render_template, abort, request, flash, redirect, url_for
 
@@ -38,8 +38,22 @@ def create():
             flash("Year must be a number.", 'danger')
             return render_template('course/create.html')
         code = request.form['code']
-        course = DerpDB.course_create(code, block, year)
-        DerpDB.user_enroll_course(get_session_user(), course, None, 'professor')
+
+        # create course
+        try:
+            course = DerpDB.course_create(code, block, year)
+        except DatabaseError:
+            # TODO should we be throwing errors or just returning None?
+            flash("Could not create course.", 'danger')  # TODO why? what foreign key contraint failed?
+            return render_template('course/create.html')
+
+        # enroll current user as professor
+        try:
+            DerpDB.user_enroll_course(get_session_user(), course, None, 'professor')
+        except DatabaseError:
+            flash("Course created -- could not assign professor role.", 'danger')  # I really hope this doesn't happen
+            return redirect(url_for('.view', id=course.course_pk))
+
         flash('Course successfully created', 'success')
         return redirect(url_for('.view', id=course.course_pk))
     return render_template('course/create.html')
