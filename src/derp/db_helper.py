@@ -89,29 +89,8 @@ class DerpDB:
                 pass  # this means they already had the permission. we can safely ignore
         conn.commit()
 
-
-class Privilege:
     @staticmethod
-    def table_init():
-        sql = """
-        CREATE TABLE IF NOT EXISTS privilege (
-            user_fk         INTEGER NOT NULL REFERENCES account(user_pk),
-            name            VARCHAR(128) NOT NULL,
-            PRIMARY KEY (user_fk, name)
-        )
-        """
-        cur.execute(sql)
-        conn.commit()
-
-class Session:
-    def __init__(self, session_pk, user, remote_addr, challenge):
-        self.session_pk = session_pk
-        self.user = user
-        self.remote_addr = remote_addr
-        self.challenge = challenge
-
-    @staticmethod
-    def new_session(user):
+    def session_init(user):
         remote_addr = request.remote_addr
         challenge = str(base64.b64encode(str(random.getrandbits(256)).encode('ascii')))
         sql = """
@@ -128,7 +107,7 @@ class Session:
         return Session(db_row[0], user, remote_addr, challenge)
 
     @staticmethod
-    def get_user():
+    def session_user():
         sql = """SELECT account.user_pk, account.github_username, account.student_id, account.email FROM session 
             LEFT JOIN account ON user_fk=user_pk 
             WHERE challenge=%s 
@@ -143,39 +122,9 @@ class Session:
             return None
         return User(db_row[0], db_row[1], db_row[2], db_row[3])
 
-    @staticmethod
-    def table_init():
-        sql = """
-        CREATE TABLE IF NOT EXISTS session (
-            session_pk    SERIAL PRIMARY KEY,
-            user_fk       INTEGER NOT NULL REFERENCES account(user_pk),
-            remote_addr   VARCHAR(128) NOT NULL,
-            challenge     VARCHAR(256) NOT NULL
-        )
-        """
-        cur.execute(sql)
-        conn.commit()
-
-
-class User:
-    def __init__(self, user_pk, github_username, student_id, email):
-        self.user_pk = user_pk
-        self.github_username = github_username
-        self.student_id = student_id
-        self.email = email
 
     @staticmethod
-    def table_init():  # 'user' is a reserved word in postgres AND I'M ANGRY ABOUT IT
-        sql = """CREATE TABLE IF NOT EXISTS account (
-            user_pk         serial primary key,
-            github_username varchar(128) NOT NULL,
-            student_id      varchar(128) UNIQUE NOT NULL,
-            email           varchar(128) NOT NULL)"""
-        cur.execute(sql)
-        conn.commit()
-
-    @staticmethod
-    def create(github_username, student_id, email):
+    def user_create(github_username, student_id, email):
         sql = """INSERT INTO account (github_username, student_id, email) 
         VALUES (%s, %s, %s) RETURNING user_pk"""
         cur.execute(sql, (github_username, student_id, email))
@@ -187,7 +136,7 @@ class User:
         return User(db_row[0], github_username, student_id, email)
 
     @staticmethod
-    def get(user_pk=None, github_username=None, student_id=None, email=None, limit=1):
+    def user_query(user_pk=None, github_username=None, student_id=None, email=None, limit=1):
         sql = 'SELECT user_pk, github_username, student_id, email FROM account WHERE '
         params = tuple()
         if user_pk:
@@ -219,47 +168,9 @@ class User:
             res.append(User(u[0], u[1], u[2], u[3]))
         return res
 
-    def courses(self):
-        return UserCourse.user_courses(self)
-
-    def delete(self):
-        cur.execute("DELETE FROM account WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
-        conn.commit()
-
-    def save(self):
-        cur.execute('UPDATE account SET github_username=%s, student_id=%s, email=%s, WHERE user_pk=%s',
-                    self.github_username, self.student_id, self.email, self.user_pk)
-        conn.commit()
-        # TODO check if it was successful
-
-
-class UserCourse:
-
-    def __init__(self, user, course, repo, role):
-        self.user = user
-        self.course = course
-        self.repo = repo
-        self.role = role
 
     @staticmethod
-    def table_init():
-        sql = """CREATE TABLE IF NOT EXISTS user_course (
-            user_fk         INTEGER REFERENCES account(user_pk) NOT NULL,
-            course_fk       INTEGER REFERENCES course(course_pk) NOT NULL,
-            repo            varchar(256),
-            role            varchar(128) not null DEFAULT 'student',
-            PRIMARY KEY (user_fk, course_fk))"""
-        cur.execute(sql)
-        conn.commit()
-
-    @staticmethod
-    def enroll(user, course, repo=None, role=None):
-        sql = """INSERT INTO user_course (user_fk, course_fk, repo, role) VALUES (%s, %s, %s, %s)"""
-        cur.execute(sql, (user.user_pk, course.course_pk, repo, role))
-        conn.commit()
-
-    @staticmethod
-    def user_courses(user):
+    def user_get_courses(user):
         sql = """SELECT user_course.repo AS repo, 
                 user_course.role AS role, 
                 course.course_pk AS course_pk, 
@@ -277,47 +188,15 @@ class UserCourse:
             res.append(UserCourse(user, course, i[0], i[1]))
         return res
 
-
-"""
-Course:
-  begin date
-  end date
-  code
-"""
-class Course:
-    def __init__(self, course_pk, code, block, year):
-        self.course_pk = course_pk
-        self.code = code
-        self.block = block
-        self.year = year
-
     @staticmethod
-    def table_init():
-        sql = """CREATE TABLE IF NOT EXISTS course (
-                course_pk       SERIAL PRIMARY KEY,
-                code            VARCHAR(128) NOT NULL,
-                block           CHAR(1) NOT NULL,
-                year            INTEGER NOT NULL
-            )"""
-        # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
-        cur.execute(sql)
+    def user_enroll_course(user, course, repo=None, role=None):
+        sql = """INSERT INTO user_course (user_fk, course_fk, repo, role) VALUES (%s, %s, %s, %s)"""
+        cur.execute(sql, (user.user_pk, course.course_pk, repo, role))
         conn.commit()
 
 
     @staticmethod
-    def create(code, block, year):
-        sql = """INSERT INTO course (code, block, year) 
-        VALUES (%s, %s, %s) RETURNING course_pk"""
-        cur.execute(sql, (code, block, year))
-        conn.commit()
-        db_row = cur.fetchone()
-        if not db_row:
-            # will only happen if the "not null" constraints are violated
-            raise DatabaseError("Could not complete create operation.")
-        return Course(db_row[0], code, block, year)
-
-    @staticmethod
-    def get(course_pk=None, code=None, block=None, year=None, limit=1):
+    def course_query(course_pk=None, code=None, block=None, year=None, limit=1):
         sql = 'SELECT course_pk, code, block, year FROM course WHERE '
         params = tuple()
         if course_pk:
@@ -350,18 +229,129 @@ class Course:
             res.append(*i)
         return res
 
-    def get_enrollment(self, user):
-        sql = """SELECT user_course.repo AS repo, 
-                user_course.role AS role
-                FROM user_course
-                WHERE course_fk=%s
-                AND user_fk=%s"""
-        cur.execute(sql, (self.course_pk, user.user_pk))
+
+    @staticmethod
+    def course_create(code, block, year):
+        sql = """INSERT INTO course (code, block, year) 
+        VALUES (%s, %s, %s) RETURNING course_pk"""
+        cur.execute(sql, (code, block, year))
         conn.commit()
-        c = cur.fetchone()
-        if not c:
-            return None
-        return UserCourse(user, self, c[0], c[1]) # TODO should this be a function of UserCourse?
+        db_row = cur.fetchone()
+        if not db_row:
+            # will only happen if the "not null" constraints are violated
+            raise DatabaseError("Could not complete create operation.")
+        return Course(db_row[0], code, block, year)
+
+
+class Privilege:
+    @staticmethod
+    def table_init():
+        sql = """
+        CREATE TABLE IF NOT EXISTS privilege (
+            user_fk         INTEGER NOT NULL REFERENCES account(user_pk),
+            name            VARCHAR(128) NOT NULL,
+            PRIMARY KEY (user_fk, name)
+        )
+        """
+        cur.execute(sql)
+        conn.commit()
+
+class Session:
+    def __init__(self, session_pk, user, remote_addr, challenge):
+        self.session_pk = session_pk
+        self.user = user
+        self.remote_addr = remote_addr
+        self.challenge = challenge
+
+    @staticmethod
+    def table_init():
+        sql = """
+        CREATE TABLE IF NOT EXISTS session (
+            session_pk    SERIAL PRIMARY KEY,
+            user_fk       INTEGER NOT NULL REFERENCES account(user_pk),
+            remote_addr   VARCHAR(128) NOT NULL,
+            challenge     VARCHAR(256) NOT NULL
+        )
+        """
+        cur.execute(sql)
+        conn.commit()
+
+
+class User:
+    def __init__(self, user_pk, github_username, student_id, email):
+        self.user_pk = user_pk
+        self.github_username = github_username
+        self.student_id = student_id
+        self.email = email
+
+    @staticmethod
+    def table_init():  # 'user' is a reserved word in postgres AND I'M ANGRY ABOUT IT
+        sql = """CREATE TABLE IF NOT EXISTS account (
+            user_pk         serial primary key,
+            github_username varchar(128) NOT NULL,
+            student_id      varchar(128) UNIQUE NOT NULL,
+            email           varchar(128) NOT NULL)"""
+        cur.execute(sql)
+        conn.commit()
+
+    def courses(self):
+        return DerpDB.user_get_courses(self)
+
+    def delete(self):
+        cur.execute("DELETE FROM account WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
+        conn.commit()
+
+    def save(self):
+        cur.execute('UPDATE account SET github_username=%s, student_id=%s, email=%s, WHERE user_pk=%s',
+                    self.github_username, self.student_id, self.email, self.user_pk)
+        conn.commit()
+
+
+class UserCourse:
+
+    def __init__(self, user, course, repo, role):
+        self.user = user
+        self.course = course
+        self.repo = repo
+        self.role = role
+
+    @staticmethod
+    def table_init():
+        sql = """CREATE TABLE IF NOT EXISTS user_course (
+            user_fk         INTEGER REFERENCES account(user_pk) NOT NULL,
+            course_fk       INTEGER REFERENCES course(course_pk) NOT NULL,
+            repo            varchar(256),
+            role            varchar(128) not null DEFAULT 'student',
+            PRIMARY KEY (user_fk, course_fk))"""
+        cur.execute(sql)
+        conn.commit()
+
+
+
+"""
+Course:
+  begin date
+  end date
+  code
+"""
+class Course:
+    def __init__(self, course_pk, code, block, year):
+        self.course_pk = course_pk
+        self.code = code
+        self.block = block
+        self.year = year
+
+    @staticmethod
+    def table_init():
+        sql = """CREATE TABLE IF NOT EXISTS course (
+                course_pk       SERIAL PRIMARY KEY,
+                code            VARCHAR(128) NOT NULL,
+                block           CHAR(1) NOT NULL,
+                year            INTEGER NOT NULL
+            )"""
+        # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
+        cur.execute(sql)
+        conn.commit()
 
     # def delete(self):
     #     cur.execute("DELETE FROM user WHERE course_pk=%s", (self.course_pk,))  # TODO check if it was successful
@@ -377,111 +367,14 @@ class Course:
 class Assignment:
 
     """
-    TODO
-    def __init__(self, course_pk, course_code):
-        self.course_pk = course_pk
-        self.course_code = course_code
+    # TODO
+    def __init__(self, ...):
+        pass
     """
     @staticmethod
     def table_init():
         sql = """CREATE TABLE IF NOT EXISTS assignment (
             assignment_pk   SERIAL PRIMARY KEY,
             course_fk       INTEGER REFERENCES course(course_pk))"""
-        # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
         cur.execute(sql)
         conn.commit()
-    '''
-    @staticmethod
-    def create(course_code):
-        sql = """INSERT INTO course (course_code) 
-        VALUES (%s) RETURNING course_pk"""
-        cur.execute(sql, (course_code,))
-        conn.commit()
-        db_row = cur.fetchone()
-        if not db_row:
-            # will only happen if the "not null" constraints are violated
-            raise DatabaseError("Could not complete create operation.")
-        return Course(db_row[0], course_code)
-
-    @staticmethod
-    def get(course_pk=None, course_code=None, limit=1):
-        sql = 'SELECT (course_pk, course_code) FROM course WHERE '
-        params = tuple()
-        if course_pk:
-            params += (course_pk,)
-            sql += 'course_pk = %s AND '
-        if course_code:
-            params += (course_code,)
-            sql += 'course_code = %s AND '
-        sql += "TRUE "
-        if limit:
-            params += (limit,)
-            sql += "LIMIT %s"
-        cur.execute(sql, params)
-        conn.commit()
-        if limit == 1:
-            c = cur.fetchone()
-            if not c:
-                return None
-            return Course(c[0], c[1])
-        # many results
-        res = []
-        for i in cur.fetchall():
-            res.append(Course(i[0], i[1]))
-        return res
-
-    def delete(self):
-        cur.execute("DELETE FROM user WHERE course_pk=%s", (self.course_pk,))  # TODO check if it was successful
-        conn.commit()
-
-    def save(self):
-        cur.execute('UPDATE users SET course_code=%s WHERE user_pk=%s',
-                    self.course_code, self.course_pk)
-        conn.commit()
-        # TODO check if it was successful
-    '''
-
-"""
-CREATE TABLE dailies (
-    daily_pk        serial primary key,
-    user_fk         integer REFERENCES  users (user_pk) not null,
-    create_dt       timestamp DEFAULT current_timestamp,
-    message         varchar(500)
-);
-
-CREATE TABLE weeklies (
-    weekly_pk       serial primary key,
-    user_fk         integer REFERENCES  users (user_pk) not null,
-    create_dt       timestamp DEFAULT current_timestamp,
-    accomplishments text,
-    next_steps      text,
-    challenges      text,
-    comments        text
-);
-
-CREATE TABLE code_reviews (
-    review_pk       serial primary key,
-    reviewer_fk     integer REFERENCES users(user_pk) not null,  -- who is reviewing
-    reviewee_fk     integer REFERENCES users (user_pk) not null, -- who is reviewed
-    released        boolean DEFAULT false, -- can the reviewee see the review
-    assigned_dt     timestamp, -- date review was assigned
-    review_dt       timestamp, -- date of the review
-    assignment      varchar(32), -- Which assignment to review for
-    comments        text
-);
-
-CREATE TABLE results (
-    result_pk       serial primary key,
-    result_name     varchar(128)
-);
-
-CREATE TABLE tests (
-    test_pk         serial primary key,
-    user_fk         integer REFERENCES  users (user_pk) not null,
-    create_dt       timestamp DEFAULT current_timestamp,
-    result_fk       integer REFERENCES results (result_pk) not null DEFAULT 1,
-    complete_dt     timestamp DEFAULT null,
-    message         text DEFAULT 'Test has not run yet'
-);
-
-"""

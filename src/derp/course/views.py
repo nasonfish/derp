@@ -38,12 +38,11 @@ def create():
             flash("Year must be a number.", 'danger')
             return render_template('course/create.html')
         code = request.form['code']
-        course = Course.create(code, block, year)
-        UserCourse.enroll(get_session_user(), course, None, 'professor')
+        course = DerpDB.course_create(code, block, year)
+        DerpDB.user_enroll_course(get_session_user(), course, None, 'professor')
         flash('Course successfully created', 'success')
         return redirect(url_for('.view', id=course.course_pk))
     return render_template('course/create.html')
-
 
 
 #

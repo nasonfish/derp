@@ -9,7 +9,7 @@ def get_session_user():
     """
     Check that a login is sensible. Should be checked before rendering any content.
     """
-    return Session.get_user()
+    return DerpDB.session_user()
 
 def login_required(f):
     @wraps(f)
@@ -42,7 +42,7 @@ def login():
             flash("Please provide your student ID.", 'error')
             return redirect(url_for("index"))
         # check if the user is in the db, and redirect to the correct location
-        user = User.get(student_id=student_id)
+        user = DerpDB.user_query(student_id=student_id)
         if not user:
             app.logger.debug("user not in db ... redirecting to signup")
             return redirect(url_for("signup"))
@@ -72,13 +72,13 @@ def authorized(access_token):
     session['github_access_token'] = access_token
     session['github_username'] = github.get('user')['login']
 
-    user = User.get(github_username=session['github_username'])
+    user = DerpDB.user_query(github_username=session['github_username'])
     if user is None:
         # No user registered in the DB... Go to the signup page.
         return redirect(url_for('signup'))
 
     # a successful login!
-    sess = Session.new_session(user)
+    sess = DerpDB.session_init(user)
     app.logger.debug("Session id: {}".format(sess.session_pk))
     session['student_id'] = sess.user.student_id
     session['session_challenge'] = sess.challenge
@@ -103,7 +103,7 @@ def signup():
         github_username = session['github_username']
         email = request.form['email']
         student_id = request.form['student_id']
-        User.create(github_username, student_id, email)
+        DerpDB.user_create(github_username, student_id, email)
         return redirect(url_for("index"))
 
 

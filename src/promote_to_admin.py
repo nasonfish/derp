@@ -13,7 +13,7 @@ if __name__ == '__main__':
     if len(argv) < 1:
         print("Usage: ./promote_to_admin.py <username>")
         exit(1)
-    user = User.get(student_id=argv[1])
+    user = DerpDB.user_query(student_id=argv[1])
     if not user:
         print("User {} could not be found.".format(argv[1]))
         exit(2)
