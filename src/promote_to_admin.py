@@ -8,9 +8,8 @@ from sys import argv
 ADMIN_PERMISSIONS = ['course:create']
 
 
-# TODO if someone could help me make this more dynamic that would be rad
 if __name__ == '__main__':
-    if len(argv) < 1:
+    if len(argv) < 2:
         print("Usage: ./promote_to_admin.py <username>")
         exit(1)
     user = DerpDB.user_query(student_id=argv[1])

@@ -90,6 +90,12 @@ class DerpDB:
         conn.commit()
 
     @staticmethod
+    def drop_permissions(user):
+        sql = """DELETE FROM privilege WHERE user_fk=%s"""
+        cur.execute(sql, (user.user_pk,))
+        conn.commit()
+
+    @staticmethod
     def session_init(user):
         remote_addr = request.remote_addr
         challenge = str(base64.b64encode(str(random.getrandbits(256)).encode('ascii')))
@@ -305,6 +311,13 @@ class User:
         cur.execute('UPDATE account SET github_username=%s, student_id=%s, email=%s, WHERE user_pk=%s',
                     self.github_username, self.student_id, self.email, self.user_pk)
         conn.commit()
+
+    def has_permission(self, permission):
+        sql = """SELECT 1 FROM privilege WHERE user_fk=%s AND name=%s"""
+        cur.execute(sql, (self.user_pk, permission))
+        conn.commit()
+        db_row = cur.fetchone()
+        return bool(db_row)  # coerce to boolean value depending on if we found a row or not.
 
 
 class Enrollment:
