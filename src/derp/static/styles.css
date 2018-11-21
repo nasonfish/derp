@@ -48,6 +48,7 @@ h1 {
 /* extra padding for derp banner */
 .derp-center{
     margin-top: 7px;
+    margin-bottom: 7px;
 }
 
 /* custom header container */
