@@ -1,5 +1,7 @@
 html,body {
   height:100%;
+  /* Pattern thanks to Toptal Subtle Patterns */
+  background-image: url('/static/images/gravel/gravel.png');
 }
 
 h1 {
@@ -105,4 +107,11 @@ tr.even {
 
 .navbar{
     min-height: 0;
+}
+
+.content{
+    border-radius: 3px;
+    border: 2px solid #bfbfbf;
+    background-color: #efefef;
+    padding: 5px 12px; /* vertical | horizontal */
 }
