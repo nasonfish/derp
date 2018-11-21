@@ -27,7 +27,7 @@ def view(id):
 @permission_required('course:create')
 def create():
     if request.method == 'POST':
-        block = request.form['block']
+        block = request.form['block']  # note that if they didn't provide anything, this fails with "request malformed"
         if len(block) > 1:
             flash("Block must be a one-character identifier, such as 'A' or '1'", 'danger')
             return render_template('course/create.html')
