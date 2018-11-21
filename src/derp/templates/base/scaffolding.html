@@ -11,7 +11,11 @@
             <ol class="breadcrumb">
                 {{ breadcrumb('dashboard', 'Home') | safe }}
                 {% block breadcrumb %}{% endblock %}
+                {% if user %}
                 <li class="breadcrumb-item nobefore pull-right"><a href="{{ url_for('logout') }}">Log Out</a></li>
+                {% else %}
+                <li class="breadcrumb-item nobefore pull-right"><a href="{{ url_for('login') }}">Log In</a></li>
+                {% endif %}
             </ol>
         </nav>
     </div>
