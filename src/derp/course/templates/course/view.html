@@ -1,15 +1,15 @@
 {% extends "base/scaffolding.html" %}
-{% block title %}View Course {{ user_course.course.code }}{% endblock %}
+{% block title %}View Course {{ enrollment.course.code }}{% endblock %}
 {% block breadcrumb %}
 {{ breadcrumb('course.index', 'Courses') | safe }}
-{{ breadcrumb('course.view', user_course.course.code, id=user_course.course.course_pk) | safe }}
+{{ breadcrumb('course.view', enrollment.course.code, id=enrollment.course.course_pk) | safe }}
 {% endblock %}
 {% block content %}
 <ul>
-    <li>Course Code: {{ user_course.course.code }}</li>
-    <li>Block: {{ user_course.course.block }}</li>
-    <li>Year: {{ user_course.course.year }}</li>
-    <li>Repository: {{ user_course.repo }}</li>
-    <li>Role: {{ user_course.role }}</li>
+    <li>Course Code: {{ enrollment.course.code }}</li>
+    <li>Block: {{ enrollment.course.block }}</li>
+    <li>Year: {{ enrollment.course.year }}</li>
+    <li>Repository: {{ enrollment.repo }}</li>
+    <li>Role: {{ enrollment.role }}</li>
 </ul>
 {% endblock %}

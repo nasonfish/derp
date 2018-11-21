@@ -42,15 +42,15 @@ class DerpDB:
     # a collection of static methods which return instances of the above objects.
     # ideally the functions inside of these classes will be moved here.
     @staticmethod
-    def user_course(user, course_id):
-        sql = """SELECT user_course.repo AS repo, 
-                user_course.role AS role, 
+    def enrollment(user, course_id):
+        sql = """SELECT enrollment.repo AS repo, 
+                enrollment.role AS role, 
                 course.course_pk AS course_pk, 
                 course.code AS code,
                 course.block AS block,
                 course.year as year
-            FROM user_course 
-            JOIN course ON course.course_pk=user_course.course_fk
+            FROM enrollment 
+            JOIN course ON course.course_pk=enrollment.course_fk
             WHERE user_fk=%s AND course_pk=%s
             LIMIT 1"""
         cur.execute(sql, (user.user_pk, course_id))
@@ -59,7 +59,7 @@ class DerpDB:
         if not i:
             return None
         course = Course(i[2], i[3], i[4], i[5])
-        return UserCourse(user, course, i[0], i[1])
+        return Enrollment(user, course, i[0], i[1])
 
     @staticmethod
     def get_user_permission(permission):
@@ -170,27 +170,27 @@ class DerpDB:
 
 
     @staticmethod
-    def user_get_courses(user):
-        sql = """SELECT user_course.repo AS repo, 
-                user_course.role AS role, 
+    def user_enrollments(user):
+        sql = """SELECT enrollment.repo AS repo, 
+                enrollment.role AS role, 
                 course.course_pk AS course_pk, 
                 course.code AS code,
                 course.block AS block,
                 course.year AS year
-            FROM user_course 
-            JOIN course ON course.course_pk=user_course.course_fk
+            FROM enrollment 
+            JOIN course ON course.course_pk=enrollment.course_fk
             WHERE user_fk=%s"""
         cur.execute(sql, (user.user_pk,))
         conn.commit()
         res = []
         for i in cur.fetchall():
             course = Course(i[2], i[3], i[4], i[5])
-            res.append(UserCourse(user, course, i[0], i[1]))
+            res.append(Enrollment(user, course, i[0], i[1]))
         return res
 
     @staticmethod
     def user_enroll_course(user, course, repo=None, role=None):
-        sql = """INSERT INTO user_course (user_fk, course_fk, repo, role) VALUES (%s, %s, %s, %s)"""
+        sql = """INSERT INTO enrollment (user_fk, course_fk, repo, role) VALUES (%s, %s, %s, %s)"""
         cur.execute(sql, (user.user_pk, course.course_pk, repo, role))
         conn.commit()
 
@@ -295,7 +295,7 @@ class User:
         conn.commit()
 
     def courses(self):
-        return DerpDB.user_get_courses(self)
+        return DerpDB.user_enrollments(self)
 
     def delete(self):
         cur.execute("DELETE FROM account WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful
@@ -307,7 +307,7 @@ class User:
         conn.commit()
 
 
-class UserCourse:
+class Enrollment:
 
     def __init__(self, user, course, repo, role):
         self.user = user
@@ -317,7 +317,7 @@ class UserCourse:
 
     @staticmethod
     def table_init():
-        sql = """CREATE TABLE IF NOT EXISTS user_course (
+        sql = """CREATE TABLE IF NOT EXISTS enrollment (
             user_fk         INTEGER REFERENCES account(user_pk) NOT NULL,
             course_fk       INTEGER REFERENCES course(course_pk) NOT NULL,
             repo            varchar(256),
