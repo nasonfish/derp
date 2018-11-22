@@ -1,7 +1,6 @@
 import os
 import psycopg2
 from flask_github import GitHub
-from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 from derp.picklesession import PickleSessionInterface
 

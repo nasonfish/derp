@@ -1,4 +1,3 @@
-from derp import app
 from derp.account import login_required, get_session_user, permission_required
 from derp.course import course
 from derp.db_helper import DerpDB, DatabaseError

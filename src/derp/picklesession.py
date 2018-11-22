@@ -1,7 +1,5 @@
-import psycopg2
 import os
 from uuid import uuid1
-from collections import MutableMapping
 from pickle import UnpicklingError, dumps, loads
 from contextlib import suppress
 from flask.sessions import SessionInterface, SessionMixin

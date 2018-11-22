@@ -9,8 +9,8 @@ def user_information_from_session():
     _user = get_session_user()
     if _user is not None:
         return dict(user=_user)
-
     return dict()
+
 
 def breadcrumb(endpoint, page, **kwargs):
     if request.url_rule.endpoint == endpoint:

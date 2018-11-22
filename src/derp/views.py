@@ -1,8 +1,9 @@
 from flask import render_template, request, redirect, url_for, session, flash
 import datetime
 
-from derp import app, cur, conn, github
-from derp.account import get_session_user, login_required
+from derp import app, cur
+from derp.account import login_required
+
 
 # jinja2 format functions
 @app.template_filter('monday')
@@ -13,6 +14,7 @@ def format_monday(dt):
     """
     return (dt - datetime.timedelta(days = dt.weekday())).date()
 
+
 @app.template_filter('to_date')
 def format_date(dt):
     """
@@ -20,28 +22,6 @@ def format_date(dt):
     Output: date object
     """
     return dt.date()
-
-def check_pending_reviews():
-    """
-    Check whether the user has pending code reviews to complete. Puts the pending review
-    information into the session.
-    """
-    SQL = "SELECT review_pk, reviewee_fk, assignment FROM code_reviews WHERE (reviewer_fk = %s AND review_dt IS NULL);"
-    data = (session['user_pk'],)
-    cur.execute(SQL, data)
-    res = cur.fetchall()
-    app.logger.debug("user pending code reviews query: {}".format(str(res)))
-    pending_reviews = []
-    for r in res:
-        pending_reviews.append( dict(zip(('review_pk', 'reviewee_fk', 'assignment'), r)) )
-    for entry in pending_reviews:
-        SQL = "SELECT repo FROM users WHERE user_pk = %s;"
-        data = (entry['reviewee_fk'],)
-        cur.execute(SQL, data)
-        res = cur.fetchone()[0]
-        entry['url'] = res
-    session['pending_reviews'] = pending_reviews
-    app.logger.debug("pending reviews session: {}".format(session['pending_reviews']))
 
 
 # Set "homepage" to index.html

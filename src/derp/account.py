@@ -1,8 +1,8 @@
 from functools import wraps
-from derp import cur, conn, app, github
+from derp import app, github
 from flask import session, redirect, url_for, request, flash, render_template, abort
 
-from derp.db_helper import Session, User, DerpDB
+from derp.db_helper import DerpDB
 
 # helper functions
 def get_session_user():
