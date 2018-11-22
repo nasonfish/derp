@@ -39,7 +39,7 @@ def login():
     if request.method == 'POST':
         student_id = request.form.get('student_id', False)
         if not student_id:
-            flash("Please provide your student ID.", 'error')
+            flash("Please provide your student ID.", 'danger')
             return redirect(url_for("index"))
         # check if the user is in the db, and redirect to the correct location
         user = DerpDB.user_query(student_id=student_id)
@@ -65,7 +65,7 @@ def authorized(access_token):
     app.logger.debug("entering authoriztion callback")
 
     if access_token is None:
-        flash("Authorization failed!", 'error')
+        flash("Authorization failed!", 'danger')
         return redirect(url_for("index"))
 
     # Add github information to the session
@@ -112,7 +112,7 @@ def logout(logout_message = None):
     if request.args.get("logout_message") is not None:
         app.logger.debug("got logout message: " + request.args.get("logout_message"))
         session.clear()
-        flash(request.args.get("logout_message"))
+        flash(request.args.get("logout_message"), 'danger')
     else:
         session.clear()
     return render_template('logout.html')
