@@ -1,6 +1,7 @@
 import os
 import psycopg2
 from flask_github import GitHub
+from flask import Flask
 
 from derp.picklesession import PickleSessionInterface
 
