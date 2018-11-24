@@ -1,4 +1,7 @@
 {% extends "base/scaffolding.html" %}
+{% block breadcrumb %}
+{{ breadcrumb('course.index', 'Courses') | safe }}
+{% endblock %}
 {% block title %}Courses Enrolled{% endblock %}
 {% block content %}
 <table class="table table-striped">

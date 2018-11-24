@@ -1,0 +1,25 @@
+{% extends "base/scaffolding.html" %}
+{% block title %}View Course {{ course.code }}{% endblock %}
+{% block breadcrumb %}
+{{ breadcrumb('course.index', 'Courses') | safe }}
+{{ breadcrumb('course.view', course.code, id=course.course_pk) | safe }}
+{{ breadcrumb('course.new_assignment', 'New assignment', id=course.course_pk) | safe }}
+{% endblock %}
+{% block content %}
+<ul>
+    <li>Course Code: {{ course.code }}</li>
+    <li>Block: {{ course.block }}</li>
+    <li>Year: {{ course.year }}</li>
+</ul>
+<form method="POST" action="">
+    <label for="a_title">Title: </label>
+    <input id="a_title" name="title" placeholder="Honor assignment #1: HashMaps" />
+    <label for="a_description">Description: </label>
+    <textarea id="a_description" name="description"></textarea>
+    <!-- TODO js plugin for selecting a range, in block-plan-ese -->
+    <button type="submit" class="btn btn-success">Create!</button>
+</form>
+{% endblock %}
+{% block js %}
+
+{% endblock %}

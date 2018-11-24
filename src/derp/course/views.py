@@ -22,6 +22,24 @@ def view(id):
     return render_template("course/view.html", enrollment=enrollment)
 
 
+@course.route('/<id>/assignment/new', methods=['GET', 'POST'])
+@permission_required('assignment:create')
+def new_assignment(id):
+    course = DerpDB.course_query(id)
+    if request.method == 'POST':
+        assignment = DerpDB.assignment_create(
+            course, request.form['title'], request.form['description'],
+            request.form['available'], request.form['due'])
+        return redirect(url_for('.view_assignment', id=id, assignment_id=assignment.assignment_pk))
+    return render_template('course/new_assignment.html', course=course)
+
+
+@course.route('/<id>/assignment/<assignment_id>')
+@login_required
+def view_assignment(id, assignment_id):
+    assignment = DerpDB.assignment_query(assignment_id)
+    return render_template('course/view_assignment.html', assignment=assignment)  # TODO create template
+
 @course.route('/create', methods=['GET', 'POST'])
 @permission_required('course:create')
 def create():

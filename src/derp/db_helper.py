@@ -232,7 +232,7 @@ class DerpDB:
         # many results
         res = []
         for i in cur.fetchall():
-            res.append(*i)
+            res.append(Course(*i))
         return res
 
 
@@ -247,6 +247,50 @@ class DerpDB:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
         return Course(db_row[0], code, block, year)
+
+    @staticmethod
+    def assignment_create(course, title, description, available, due):
+        sql = """INSERT INTO assignment (course_fk, title, description, available, due)
+        VALUES (%s, %s, %s, %s, %s) RETRNING assignment_pk"""
+        cur.execute(sql, (course.course_pk, title, description, available, due))
+        conn.commit()
+        db_row = cur.fetchone()
+        if not db_row:
+            raise DatabaseError("The assignment was not able to be able to be created")
+        return Assignment(db_row[0], course, title, description, available, due)
+
+
+    @staticmethod
+    def assignment_query(assignment_pk=None, course_fk=None, limit=1):
+        sql = """SELECT course.course_pk, course.code, course.block, course.year,
+              assignment_pk, title, description, available, due FROM course
+              JOIN course ON course.course_pk=assignment.course_fk WHERE """
+        params = tuple()
+        if assignment_pk:
+            params += (assignment_pk,)
+            sql += 'assignment_pk = %s AND '
+        if course_fk:
+            params += (course_fk,)
+            sql += 'course_fk = %s AND '
+        sql += "TRUE "
+        if limit:
+            params += (limit,)
+            sql += "LIMIT %s"
+        cur.execute(sql, params)
+        conn.commit()
+
+        if limit == 1:
+            c = cur.fetchone()
+            if not c:
+                return None
+            course = Course(c[0], c[1], c[2], c[3])
+            return Assignment(c[4], course, c[5], c[6], c[7], c[8])
+        # many results
+        res = []
+        for c in cur.fetchall():
+            course = Course(c[0], c[1], c[2], c[3])
+            res.append(Assignment(c[4], course, c[5], c[6], c[7], c[8]))
+        return res
 
 
 class Privilege:
@@ -340,13 +384,6 @@ class Enrollment:
         conn.commit()
 
 
-
-"""
-Course:
-  begin date
-  end date
-  code
-"""
 class Course:
     def __init__(self, course_pk, code, block, year):
         self.course_pk = course_pk
@@ -366,12 +403,24 @@ class Course:
         cur.execute(sql)
         conn.commit()
 
-    # def delete(self):
-    #     cur.execute("DELETE FROM user WHERE course_pk=%s", (self.course_pk,))  # TODO check if it was successful
-    #     conn.commit()
-    #
-    # def save(self):
-    #     cur.execute('UPDATE users SET course_code=%s WHERE user_pk=%s',
-    #                 self.course_code, self.course_pk)
-    #     conn.commit()
-    #     # TODO check if it was successful
+class Assignment:
+
+    def __init__(self, assignment_pk, course, title, description, available, due):
+        self.assignment_pk = assignment_pk
+        self.course = course
+        self.title = title
+        self.description = description
+        self.available = available
+        self.due = due
+
+    @staticmethod
+    def table_init():
+        sql = """CREATE TABLE IF NOT EXISTS assignment (
+            assignment_pk   SERIAL PRIMARY KEY,
+            course_fk       INTEGER REFERENCES course(course_pk)),,
+            title           TEXT,
+            description     TEXT
+            available       TIMESTAMPZ NOT NULL,
+            due             TIMESTAMPZ NOT NULL"""
+        cur.execute(sql)
+        conn.commit()

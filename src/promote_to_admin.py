@@ -5,7 +5,7 @@ from sys import argv
 # Also useful: identifying a set of permissions as the ones which constitute "admin"
 # I'm sort of going about this like IRC permissions work. It allows fine-tuned flexibility,
 # but perhaps more than we need?
-ADMIN_PERMISSIONS = ['course:create']
+ADMIN_PERMISSIONS = ['course:create', 'assignment:create']
 
 
 if __name__ == '__main__':
