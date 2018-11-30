@@ -35,10 +35,11 @@ def new_assignment(id):
 
 
 @course.route('/<id>/assignment/<assignment_id>')
-@login_required
+@login_required  # TODO better access control (query for class, enrollment, and assignment with inner join)
 def view_assignment(id, assignment_id):
     assignment = DerpDB.assignment_query(assignment_id)
     return render_template('course/view_assignment.html', assignment=assignment)  # TODO create template
+
 
 @course.route('/create', methods=['GET', 'POST'])
 @permission_required('course:create')
