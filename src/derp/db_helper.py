@@ -375,19 +375,3 @@ class Course:
     #                 self.course_code, self.course_pk)
     #     conn.commit()
     #     # TODO check if it was successful
-
-
-class Assignment:
-
-    """
-    # TODO
-    def __init__(self, ...):
-        pass
-    """
-    @staticmethod
-    def table_init():
-        sql = """CREATE TABLE IF NOT EXISTS assignment (
-            assignment_pk   SERIAL PRIMARY KEY,
-            course_fk       INTEGER REFERENCES course(course_pk))"""
-        cur.execute(sql)
-        conn.commit()
