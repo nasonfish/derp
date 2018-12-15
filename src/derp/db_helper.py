@@ -417,10 +417,10 @@ class Assignment:
     def table_init():
         sql = """CREATE TABLE IF NOT EXISTS assignment (
             assignment_pk   SERIAL PRIMARY KEY,
-            course_fk       INTEGER REFERENCES course(course_pk)),,
+            course_fk       INTEGER REFERENCES course(course_pk),
             title           TEXT,
             description     TEXT
             available       TIMESTAMPZ NOT NULL,
-            due             TIMESTAMPZ NOT NULL"""
+            due             TIMESTAMPZ NOT NULL)"""
         cur.execute(sql)
         conn.commit()
