@@ -36,3 +36,9 @@ Users sign-up and log-in using the same methods that professors use (via SSI or 
  - User must be able to run tests on their code at any time in order to evaluate a potential submission.
  - Tests should test the output of the code and not code quality
  
+## Administrator
+
+Someone needs to be able to set up this piece of software in order to work.
+
+We will provide documentation about how to run this piece of software, for other companies/schools to be able to run this piece of software.
+
