@@ -41,4 +41,3 @@ Users sign-up and log-in using the same methods that professors use (via SSI or 
 Someone needs to be able to set up this piece of software in order to work.
 
 We will provide documentation about how to run this piece of software, for other companies/schools to be able to run this piece of software.
-

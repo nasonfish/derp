@@ -2,7 +2,7 @@
 {% block title %}List Courses{% endblock %}
 {% block breadcrumb %}
 {{ breadcrumb('course.index', 'Courses') | safe }}
-{% if user.has_permission('course:create') %}
+{% if user and user.has_permission('course:create') %}
 {{ breadcrumb('course.create', 'Create') | safe }}
 {% endif %}
 {% endblock %}
