@@ -1,7 +1,39 @@
+import datetime
+
 from derp import app
 from derp.account import get_session_user
 
 from flask import request, url_for
+
+
+# jinja2 format functions
+@app.template_filter('monday')
+def format_monday(dt):
+    """
+    Input: datetime object
+    Output: date object representing the monday preceding the input datetime
+    """
+    return (dt - datetime.timedelta(days = dt.weekday())).date()
+
+
+@app.template_filter('to_date')
+def format_date(dt):
+    """
+    Input: datetime object
+    Output: date object
+    """
+    return dt.date()
+
+
+@app.template_filter('relative_date')
+def relative_date(epoch):
+    """
+    :param epoch: Integer representation of a date
+    :return: A string describing the date
+    """
+    return datetime.datetime.fromtimestamp(epoch).strftime('%Y-%m-%d (%A %B %d)')
+    # TODO revisit this and show, perhaps, "fourth tuesday" or "in 3 days/3 days ago"
+
 
 
 @app.context_processor

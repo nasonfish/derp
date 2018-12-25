@@ -251,7 +251,7 @@ class DerpDB:
     @staticmethod
     def assignment_create(course, title, description, available, due):
         sql = """INSERT INTO assignment (course_fk, title, description, available, due)
-        VALUES (%s, %s, %s, %s, %s) RETRNING assignment_pk"""
+        VALUES (%s, %s, %s, %s, %s) RETURNING assignment_pk"""
         cur.execute(sql, (course.course_pk, title, description, available, due))
         conn.commit()
         db_row = cur.fetchone()
@@ -263,7 +263,7 @@ class DerpDB:
     @staticmethod
     def assignment_query(assignment_pk=None, course_fk=None, limit=1):
         sql = """SELECT course.course_pk, course.code, course.block, course.year,
-              assignment_pk, title, description, available, due FROM course
+              assignment_pk, title, description, available, due FROM assignment
               JOIN course ON course.course_pk=assignment.course_fk WHERE """
         params = tuple()
         if assignment_pk:
@@ -419,8 +419,8 @@ class Assignment:
             assignment_pk   SERIAL PRIMARY KEY,
             course_fk       INTEGER REFERENCES course(course_pk),
             title           TEXT,
-            description     TEXT
-            available       TIMESTAMPZ NOT NULL,
-            due             TIMESTAMPZ NOT NULL)"""
+            description     TEXT,
+            available       INTEGER NOT NULL,
+            due             INTEGER NOT NULL)"""
         cur.execute(sql)
         conn.commit()

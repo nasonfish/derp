@@ -1,0 +1,18 @@
+{% extends "base/scaffolding.html" %}
+{% block title %}View Assignment "{{ assignment.title }}"{% endblock %}
+{% block breadcrumb %}
+{{ breadcrumb('course.index', 'Courses') | safe }}
+{{ breadcrumb('course.view', assignment.course.code, id=assignment.course.course_pk) | safe }}
+{{ breadcrumb('course.view_assignment', 'Assignment ' + assignment.title, id=assignment.assignment_pk) | safe }}
+{% endblock %}
+{% block content %}
+<ul>
+    <li>Course Code: {{ assignment.course.code }}</li>
+    <li>Block: {{ assignment.course.block }}</li>
+    <li>Year: {{ assignment.course.year }}</li>
+    <li>Assignment: {{ assignment.title }}</li>
+    <li>Description: {{ assignment.description }}</li>
+    <li>Available: {{ assignment.available |relative_date }}</li>
+    <li>Due: {{ assignment.due |relative_date }}</li>
+</ul>
+{% endblock %}

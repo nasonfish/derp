@@ -1,27 +1,7 @@
 from flask import render_template, request, redirect, url_for, session, flash
-import datetime
 
 from derp import app, cur
 from derp.account import login_required
-
-
-# jinja2 format functions
-@app.template_filter('monday')
-def format_monday(dt):
-    """
-    Input: datetime object
-    Output: date object representing the monday preceding the input datetime
-    """
-    return (dt - datetime.timedelta(days = dt.weekday())).date()
-
-
-@app.template_filter('to_date')
-def format_date(dt):
-    """
-    Input: datetime object
-    Output: date object
-    """
-    return dt.date()
 
 
 # Set "homepage" to index.html

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from derp.account import login_required, get_session_user, permission_required
 from derp.course import course
 from derp.db_helper import DerpDB, DatabaseError
@@ -27,9 +29,15 @@ def view(id):
 def new_assignment(id):
     course = DerpDB.course_query(id)
     if request.method == 'POST':
+        try:
+            available_date = datetime.strptime(request.form['available'], '%Y-%m-%d').timestamp()
+            due_date = datetime.strptime(request.form['due'], '%Y-%m-%d').timestamp()
+        except ValueError:
+            flash("Date selection was malformed.", 'danger')
+            return render_template('course/new_assignment.html', course=course)
         assignment = DerpDB.assignment_create(
             course, request.form['title'], request.form['description'],
-            request.form['available'], request.form['due'])
+            available_date, due_date)
         return redirect(url_for('.view_assignment', id=id, assignment_id=assignment.assignment_pk))
     return render_template('course/new_assignment.html', course=course)
 
@@ -37,7 +45,9 @@ def new_assignment(id):
 @course.route('/<id>/assignment/<assignment_id>')
 @login_required  # TODO better access control (query for class, enrollment, and assignment with inner join)
 def view_assignment(id, assignment_id):
-    assignment = DerpDB.assignment_query(assignment_id)
+    assignment = DerpDB.assignment_query(assignment_id, course_fk=id)
+    if not assignment:
+        return abort(404)
     return render_template('course/view_assignment.html', assignment=assignment)  # TODO create template
 
 
