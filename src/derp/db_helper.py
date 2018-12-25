@@ -403,6 +403,10 @@ class Course:
         cur.execute(sql)
         conn.commit()
 
+    def assignments(self):
+        return DerpDB.assignment_query(course_fk=self.course_pk, limit=None)
+
+
 class Assignment:
 
     def __init__(self, assignment_pk, course, title, description, available, due):

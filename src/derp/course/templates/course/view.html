@@ -15,4 +15,10 @@
     <li>Repository: {{ enrollment.repo }}</li>
     <li>Role: {{ enrollment.role }}</li>
 </ul>
+
+<ul>
+    {% for i in enrollment.course.assignments() %}
+    <li><a href="{{ url_for('course.view_assignment', id=enrollment.course.course_pk, assignment_id=i.assignment_pk) }}">{{ i.title }}</a></li>
+    {% endfor %}
+</ul>
 {% endblock %}
