@@ -3,9 +3,6 @@
 {% block breadcrumb %}
 {{ breadcrumb('course.index', 'Courses') | safe }}
 {{ breadcrumb('course.view', enrollment.course.code, id=enrollment.course.course_pk) | safe }}
-{% if user.has_permission('assignment:create') %}
-{{ breadcrumb('course.new_assignment', 'New assignment', id=enrollment.course.course_pk) | safe }}
-{% endif %}
 {% endblock %}
 {% block content %}
 <ul>
@@ -21,4 +18,8 @@
     <li><a href="{{ url_for('course.view_assignment', id=enrollment.course.course_pk, assignment_id=i.assignment_pk) }}">{{ i.title }}</a></li>
     {% endfor %}
 </ul>
+
+{% if user.has_permission('assignment:create') %}
+<p><a href="{{ url_for('course.new_assignment', id=enrollment.course.course_pk) }}">Create new assignment</a></p>
+{% endif %}
 {% endblock %}
