@@ -349,7 +349,10 @@ class User:
         conn.commit()
 
     def courses(self):
-        return DerpDB.user_enrollments(self)
+        return {
+            'active': [e for e in DerpDB.user_enrollments(self) if e.course.active],
+            'inactive': [e for e in DerpDB.user_enrollments(self) if not e.course.active],
+        }
 
     def delete(self):
         cur.execute("DELETE FROM account WHERE user_pk=%s", (self.user_pk,))  # TODO check if it was successful

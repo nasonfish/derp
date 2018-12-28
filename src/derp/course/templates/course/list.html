@@ -16,7 +16,28 @@
         </tr>
     </thead>
     <tbody>
-    {% for enrollment in user.courses() %}
+    {% set enrollments = user.courses() %}
+    {% if enrollments.active | length %}
+    <tr><td colspan="6"><strong>ACTIVE ENROLLMENTS</strong></td></tr>
+    {% endif %}
+    {% for enrollment in enrollments.active %}
+        <tr>
+            <td>{{ enrollment.course.code }}</td>
+            <td>{{ enrollment.course.block }}</td>
+            <td>{{ enrollment.course.year }}</td>
+            <td>{{ enrollment.repo }}</td>
+            <td>{{ enrollment.role }}</td>
+            <td>
+                <a href="{{ url_for('course.view', id=enrollment.course.course_pk) }}">
+                    <button type="button" class="btn btn-info">View</button>
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    {% if enrollments.inactive | length %}
+    <tr><td colspan="6"><strong>INACTIVE ENROLLMENTS</strong></td></tr>
+    {% endif %}
+    {% for enrollment in enrollments.inactive %}
         <tr>
             <td>{{ enrollment.course.code }}</td>
             <td>{{ enrollment.course.block }}</td>
