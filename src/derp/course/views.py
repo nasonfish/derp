@@ -69,7 +69,7 @@ def create():
 
         # create course
         try:
-            course = DerpDB.course_create(code, block, year)
+            course = DerpDB.course_create(code, block, year, False)
         except DatabaseError:
             # TODO should we be throwing errors or just returning None?
             flash("Could not create course.", 'danger')  # TODO why? what foreign key contraint failed?

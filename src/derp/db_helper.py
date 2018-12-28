@@ -48,7 +48,8 @@ class DerpDB:
                 course.course_pk AS course_pk, 
                 course.code AS code,
                 course.block AS block,
-                course.year as year
+                course.year AS year,
+                course.active AS active
             FROM enrollment 
             JOIN course ON course.course_pk=enrollment.course_fk
             WHERE user_fk=%s AND course_pk=%s
@@ -58,7 +59,7 @@ class DerpDB:
         i = cur.fetchone()
         if not i:
             return None
-        course = Course(i[2], i[3], i[4], i[5])
+        course = Course(i[2], i[3], i[4], i[5], i[6])
         return Enrollment(user, course, i[0], i[1])
 
     @staticmethod
@@ -182,7 +183,8 @@ class DerpDB:
                 course.course_pk AS course_pk, 
                 course.code AS code,
                 course.block AS block,
-                course.year AS year
+                course.year AS year,
+                course.active AS active
             FROM enrollment 
             JOIN course ON course.course_pk=enrollment.course_fk
             WHERE user_fk=%s"""
@@ -190,7 +192,7 @@ class DerpDB:
         conn.commit()
         res = []
         for i in cur.fetchall():
-            course = Course(i[2], i[3], i[4], i[5])
+            course = Course(i[2], i[3], i[4], i[5], i[6])
             res.append(Enrollment(user, course, i[0], i[1]))
         return res
 
@@ -202,8 +204,8 @@ class DerpDB:
 
 
     @staticmethod
-    def course_query(course_pk=None, code=None, block=None, year=None, limit=1):
-        sql = 'SELECT course_pk, code, block, year FROM course WHERE '
+    def course_query(course_pk=None, code=None, block=None, year=None, active=None, limit=1):
+        sql = 'SELECT course_pk, code, block, year, active FROM course WHERE '
         params = tuple()
         if course_pk:
             params += (course_pk,)
@@ -217,6 +219,9 @@ class DerpDB:
         if year:
             params += (year,)
             sql += 'year = %s AND '
+        if active is not None:
+            params += (active,)
+            sql += 'active = %s AND '
         sql += "TRUE "
         if limit:
             params += (limit,)
@@ -237,16 +242,16 @@ class DerpDB:
 
 
     @staticmethod
-    def course_create(code, block, year):
-        sql = """INSERT INTO course (code, block, year) 
-        VALUES (%s, %s, %s) RETURNING course_pk"""
-        cur.execute(sql, (code, block, year))
+    def course_create(code, block, year, active):
+        sql = """INSERT INTO course (code, block, year, active) 
+        VALUES (%s, %s, %s, %s) RETURNING course_pk"""
+        cur.execute(sql, (code, block, year, active))
         conn.commit()
         db_row = cur.fetchone()
         if not db_row:
             # will only happen if the "not null" constraints are violated
             raise DatabaseError("Could not complete create operation.")
-        return Course(db_row[0], code, block, year)
+        return Course(db_row[0], code, block, year, active)
 
     @staticmethod
     def assignment_create(course, title, description, available, due):
@@ -259,10 +264,9 @@ class DerpDB:
             raise DatabaseError("The assignment was not able to be able to be created")
         return Assignment(db_row[0], course, title, description, available, due)
 
-
     @staticmethod
     def assignment_query(assignment_pk=None, course_fk=None, limit=1):
-        sql = """SELECT course.course_pk, course.code, course.block, course.year,
+        sql = """SELECT course.course_pk, course.code, course.block, course.year, course.active,
               assignment_pk, title, description, available, due FROM assignment
               JOIN course ON course.course_pk=assignment.course_fk WHERE """
         params = tuple()
@@ -283,13 +287,13 @@ class DerpDB:
             c = cur.fetchone()
             if not c:
                 return None
-            course = Course(c[0], c[1], c[2], c[3])
-            return Assignment(c[4], course, c[5], c[6], c[7], c[8])
+            course = Course(c[0], c[1], c[2], c[3], c[4])
+            return Assignment(c[5], course, c[6], c[7], c[8], c[9])
         # many results
         res = []
         for c in cur.fetchall():
-            course = Course(c[0], c[1], c[2], c[3])
-            res.append(Assignment(c[4], course, c[5], c[6], c[7], c[8]))
+            course = Course(c[0], c[1], c[2], c[3], c[4])
+            res.append(Assignment(c[5], course, c[6], c[7], c[8], c[9]))
         return res
 
 
@@ -385,11 +389,12 @@ class Enrollment:
 
 
 class Course:
-    def __init__(self, course_pk, code, block, year):
+    def __init__(self, course_pk, code, block, year, active):
         self.course_pk = course_pk
         self.code = code
         self.block = block
         self.year = year
+        self.active = active
 
     @staticmethod
     def table_init():
@@ -397,7 +402,8 @@ class Course:
                 course_pk       SERIAL PRIMARY KEY,
                 code            VARCHAR(128) NOT NULL,
                 block           CHAR(1) NOT NULL,
-                year            INTEGER NOT NULL
+                year            INTEGER NOT NULL,
+                active          BOOLEAN NOT NULL DEFAULT FALSE
             )"""
         # professor_fk    VARCHAR(128) REFERENCES user(user_pk) NOT NULL,
         cur.execute(sql)
