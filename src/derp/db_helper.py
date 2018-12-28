@@ -348,7 +348,9 @@ class User:
         cur.execute(sql)
         conn.commit()
 
-    def courses(self):
+    def courses(self, by_category=False):
+        if not by_category:
+            return DerpDB.user_enrollments(self)
         return {
             'active': [e for e in DerpDB.user_enrollments(self) if e.course.active],
             'inactive': [e for e in DerpDB.user_enrollments(self) if not e.course.active],

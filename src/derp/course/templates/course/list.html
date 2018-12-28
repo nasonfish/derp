@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-    {% set enrollments = user.courses() %}
+    {% set enrollments = user.courses(True) %}
     {% if enrollments.active | length %}
     <tr><td colspan="6"><strong>ACTIVE ENROLLMENTS</strong></td></tr>
     {% endif %}
