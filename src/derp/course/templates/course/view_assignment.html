@@ -14,5 +14,6 @@
     <li>Description: {{ assignment.description }}</li>
     <li>Available: {{ assignment.available |relative_date }}</li>
     <li>Due: {{ assignment.due |relative_date }}</li>
+    <li>Active: {{ 'yes' if assignment.active() else 'no' }}</li>
 </ul>
 {% endblock %}

@@ -437,3 +437,7 @@ class Assignment:
             due             INTEGER NOT NULL)"""
         cur.execute(sql)
         conn.commit()
+
+    def active(self):
+        current_time = datetime.datetime.now().timestamp()
+        return self.available < current_time < self.due  # you can do this? wow
