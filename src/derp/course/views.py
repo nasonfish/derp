@@ -24,6 +24,17 @@ def view(id):
     return render_template("course/view.html", course=enrollment.course, enrollment=enrollment)
 
 
+
+@course.route('/<id>/activate')
+@login_required
+def activate(id):
+    user = get_session_user()
+    enrollment = DerpDB.enrollment(user, id)
+    if not enrollment or enrollment.role != 'professor':  # TODO make this permission based?
+        return abort(403)
+    enrollment.course.toggle_active()
+    return redirect(url_for('.view', id=id))
+
 @course.route('/<id>/assignment/new', methods=['GET', 'POST'])
 @permission_required('assignment:create')
 def new_assignment(id):

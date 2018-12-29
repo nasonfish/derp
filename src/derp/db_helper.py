@@ -296,6 +296,12 @@ class DerpDB:
             res.append(Assignment(c[5], course, c[6], c[7], c[8], c[9]))
         return res
 
+    @staticmethod
+    def toggle_active(course):
+        sql ="""UPDATE course SET active=(NOT active) WHERE course.course_pk=%s"""
+        cur.execute(sql, (course.course_pk,))
+        # TODO handle errors?
+
 
 class Privilege:
     @staticmethod
@@ -416,6 +422,9 @@ class Course:
 
     def assignments(self):
         return DerpDB.assignment_query(course_fk=self.course_pk, limit=None)
+
+    def toggle_active(self):
+        return DerpDB.toggle_active(self)
 
 
 class Assignment:

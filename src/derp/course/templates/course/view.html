@@ -11,6 +11,15 @@
     <li>Year: {{ enrollment.course.year }}</li>
     <li>Repository: {{ enrollment.repo }}</li>
     <li>Role: {{ enrollment.role }}</li>
+    <li>
+        Active: {% if enrollment.role == 'professor' %}
+        <button class="btn btn-{{ 'success' if course.active else 'warning' }}">
+            <a href="{{ url_for('course.activate', id=course.course_pk)}}">{{ 'active' if course.active else 'inactive' }}</a>
+        </button>
+        {% else %}
+        {{ 'active' if course.active else 'inactive' }}
+        {% endif %}
+    </li>
 </ul>
 
 <ul>
