@@ -1,8 +1,7 @@
-{% extends "base/scaffolding.html" %}
+{% extends "course/view.html" %}
 {% block title %}View Assignment "{{ assignment.title }}"{% endblock %}
 {% block breadcrumb %}
-{{ breadcrumb('course.index', 'Courses') | safe }}
-{{ breadcrumb('course.view', assignment.course.code, id=assignment.course.course_pk) | safe }}
+{{ super() }}
 {{ breadcrumb('course.view_assignment', 'Assignment ' + assignment.title, id=assignment.assignment_pk) | safe }}
 {% endblock %}
 {% block content %}

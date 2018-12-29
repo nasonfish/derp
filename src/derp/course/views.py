@@ -21,7 +21,7 @@ def view(id):
     enrollment = DerpDB.enrollment(user, id)
     if not enrollment:
         return abort(404)
-    return render_template("course/view.html", enrollment=enrollment)
+    return render_template("course/view.html", course=enrollment.course, enrollment=enrollment)
 
 
 @course.route('/<id>/assignment/new', methods=['GET', 'POST'])
@@ -48,7 +48,7 @@ def view_assignment(id, assignment_id):
     assignment = DerpDB.assignment_query(assignment_id, course_fk=id)
     if not assignment:
         return abort(404)
-    return render_template('course/view_assignment.html', assignment=assignment)  # TODO create template
+    return render_template('course/view_assignment.html', course=assignment.course, assignment=assignment)  # TODO create template
 
 
 @course.route('/create', methods=['GET', 'POST'])
