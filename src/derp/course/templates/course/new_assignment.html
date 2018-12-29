@@ -2,7 +2,7 @@
 {% block title %}View Course {{ course.code }}{% endblock %}
 {% block breadcrumb %}
 {{ super() }}
-{{ breadcrumb('course.new_assignment', 'New assignment', id=course.course_pk) | safe }}
+{{ breadcrumb('course.new_assignment', 'New assignment', id=course.id) | safe }}
 {% endblock %}
 {% block content %}
 <ul>

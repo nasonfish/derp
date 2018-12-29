@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-    {% for enrollment in user.courses() %}
+    {% for enrollment in user.enrollments %}
         <tr>
             <td>{{ enrollment.course.code }}</td>
             <td>{{ enrollment.course.block }}</td>
@@ -24,7 +24,7 @@
             <td>{{ enrollment.repo }}</td>
             <td>{{ enrollment.role }}</td>
             <td>
-                <a href="{{ url_for('course.view', id=enrollment.course.course_pk) }}">
+                <a href="{{ url_for('course.view', id=enrollment.course.id) }}">
                     <button type="button" class="btn btn-info">View</button>
                 </a>
             </td>

@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-    {% set enrollments = user.courses(True) %}
+    {% set enrollments = user.courses() %}
     {% if enrollments.active | length %}
     <tr><td colspan="6"><strong>ACTIVE ENROLLMENTS</strong></td></tr>
     {% endif %}
@@ -28,7 +28,7 @@
             <td>{{ enrollment.repo }}</td>
             <td>{{ enrollment.role }}</td>
             <td>
-                <a href="{{ url_for('course.view', id=enrollment.course.course_pk) }}">
+                <a href="{{ url_for('course.view', id=enrollment.course.id) }}">
                     <button type="button" class="btn btn-info">View</button>
                 </a>
             </td>
@@ -45,7 +45,7 @@
             <td>{{ enrollment.repo }}</td>
             <td>{{ enrollment.role }}</td>
             <td>
-                <a href="{{ url_for('course.view', id=enrollment.course.course_pk) }}">
+                <a href="{{ url_for('course.view', id=enrollment.course.id) }}">
                     <button type="button" class="btn btn-info">View</button>
                 </a>
             </td>

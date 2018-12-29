@@ -1,4 +1,4 @@
-from derp.db_helper import User, DerpDB
+from derp.models import Account, Privilege
 from sys import argv
 
 # TODO specify these in the modules, and retrieve them in this script
@@ -12,9 +12,10 @@ if __name__ == '__main__':
     if len(argv) < 2:
         print("Usage: ./promote_to_admin.py <username>")
         exit(1)
-    user = DerpDB.user_query(student_id=argv[1])
+    user = Account.query.filter_by(student_id=argv[1]).first()
     if not user:
         print("User {} could not be found.".format(argv[1]))
         exit(2)
-    DerpDB.add_permissions(user, ADMIN_PERMISSIONS)
+    for perm in ADMIN_PERMISSIONS:
+        Privilege(user, perm)
     print("User {} has been promoted to admin permissions".format(argv[1]))

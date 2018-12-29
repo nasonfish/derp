@@ -2,7 +2,9 @@ from datetime import datetime
 
 from derp.account import login_required, get_session_user, permission_required
 from derp.course import course
-from derp.db_helper import DerpDB, DatabaseError
+from derp.models import Course, Enrollment, Assignment
+
+from derp import db
 
 from flask import render_template, abort, request, flash, redirect, url_for
 
@@ -18,9 +20,7 @@ def index():
 @login_required
 def view(id):
     user = get_session_user()
-    enrollment = DerpDB.enrollment(user, id)
-    if not enrollment:
-        return abort(404)
+    enrollment = Enrollment.query.filter_by(account_fk=user.id, course_fk=id).first_or_404()
     return render_template("course/view.html", course=enrollment.course, enrollment=enrollment)
 
 
@@ -29,16 +29,18 @@ def view(id):
 @login_required
 def activate(id):
     user = get_session_user()
-    enrollment = DerpDB.enrollment(user, id)
+    enrollment = Enrollment.query.filter_by(account_fk=user.id, course_fk=id).first_or_404()
     if not enrollment or enrollment.role != 'professor':  # TODO make this permission based?
         return abort(403)
-    enrollment.course.toggle_active()
+    enrollment.course.active = not enrollment.course.active
+    db.session.add(enrollment.course)
+    db.session.commit()
     return redirect(url_for('.view', id=id))
 
 @course.route('/<id>/assignment/new', methods=['GET', 'POST'])
 @permission_required('assignment:create')
 def new_assignment(id):
-    course = DerpDB.course_query(id)
+    course = Course.query.filter_by(id=id).first()
     if request.method == 'POST':
         try:
             available_date = datetime.strptime(request.form['available'], '%Y-%m-%d').timestamp()
@@ -46,20 +48,18 @@ def new_assignment(id):
         except ValueError:
             flash("Date selection was malformed.", 'danger')
             return render_template('course/new_assignment.html', course=course)
-        assignment = DerpDB.assignment_create(
+        assignment = Assignment(
             course, request.form['title'], request.form['description'],
             available_date, due_date)
-        return redirect(url_for('.view_assignment', id=id, assignment_id=assignment.assignment_pk))
+        return redirect(url_for('.view_assignment', id=id, assignment_id=assignment.id))
     return render_template('course/new_assignment.html', course=course)
 
 
 @course.route('/<id>/assignment/<assignment_id>')
 @login_required  # TODO better access control (query for class, enrollment, and assignment with inner join)
 def view_assignment(id, assignment_id):
-    assignment = DerpDB.assignment_query(assignment_id, course_fk=id)
-    if not assignment:
-        return abort(404)
-    return render_template('course/view_assignment.html', course=assignment.course, assignment=assignment)  # TODO create template
+    assignment = Assignment.query.filter_by(id=assignment_id, course_fk=id).first_or_404()
+    return render_template('course/view_assignment.html', course=assignment.course, assignment=assignment)
 
 
 @course.route('/create', methods=['GET', 'POST'])
@@ -79,22 +79,12 @@ def create():
         code = request.form['code']
 
         # create course
-        try:
-            course = DerpDB.course_create(code, block, year, False)
-        except DatabaseError:
-            # TODO should we be throwing errors or just returning None?
-            flash("Could not create course.", 'danger')  # TODO why? what foreign key contraint failed?
-            return render_template('course/create.html')
+        course = Course(code, block, year, False)
 
-        # enroll current user as professor
-        try:
-            DerpDB.user_enroll_course(get_session_user(), course, None, 'professor')
-        except DatabaseError:
-            flash("Course created -- could not assign professor role.", 'danger')  # I really hope this doesn't happen
-            return redirect(url_for('.view', id=course.course_pk))
+        Enrollment(get_session_user(), course, None, 'professor')
 
         flash('Course successfully created', 'success')
-        return redirect(url_for('.view', id=course.course_pk))
+        return redirect(url_for('.view', id=course.id))
     return render_template('course/create.html')
 
 

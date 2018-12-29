@@ -2,7 +2,7 @@
 {% block title %}View Course {{ enrollment.course.code }}{% endblock %}
 {% block breadcrumb %}
 {{ super() }}
-{{ breadcrumb('course.view', course.code, id=course.course_pk) | safe }}
+{{ breadcrumb('course.view', course.code, id=course.id) | safe }}
 {% endblock %}
 {% block content %}
 <ul>
@@ -14,7 +14,7 @@
     <li>
         Active: {% if enrollment.role == 'professor' %}
         <button class="btn btn-{{ 'success' if course.active else 'warning' }}">
-            <a href="{{ url_for('course.activate', id=course.course_pk)}}">{{ 'active' if course.active else 'inactive' }}</a>
+            <a href="{{ url_for('course.activate', id=course.id)}}">{{ 'active' if course.active else 'inactive' }}</a>
         </button>
         {% else %}
         {{ 'active' if course.active else 'inactive' }}
@@ -23,12 +23,12 @@
 </ul>
 
 <ul>
-    {% for i in enrollment.course.assignments() %}
-    <li><a href="{{ url_for('course.view_assignment', id=enrollment.course.course_pk, assignment_id=i.assignment_pk) }}">{{ i.title }}</a></li>
+    {% for i in enrollment.course.assignments %}
+    <li><a href="{{ url_for('course.view_assignment', id=enrollment.course.id, assignment_id=i.id) }}">{{ i.title }}</a></li>
     {% endfor %}
 </ul>
 
 {% if user.has_permission('assignment:create') %}
-<p><a href="{{ url_for('course.new_assignment', id=enrollment.course.course_pk) }}">Create new assignment</a></p>
+<p><a href="{{ url_for('course.new_assignment', id=enrollment.course.id) }}">Create new assignment</a></p>
 {% endif %}
 {% endblock %}
