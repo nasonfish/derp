@@ -58,8 +58,20 @@ def new_assignment(id):
 @course.route('/<id>/assignment/<assignment_id>')
 @login_required  # TODO better access control (query for class, enrollment, and assignment with inner join)
 def view_assignment(id, assignment_id):
+    enrollment = Enrollment.query.filter_by(account_fk=get_session_user().id, course_fk=id).first_or_404()
     assignment = Assignment.query.filter_by(id=assignment_id, course_fk=id).first_or_404()
-    return render_template('course/view_assignment.html', course=assignment.course, assignment=assignment)
+    return render_template('course/view_assignment.html',
+                           course=assignment.course, assignment=assignment, enrollment=enrollment)
+
+
+@course.route('/<id>/assignment/<assignment_id>/submit')
+@login_required
+def submit_assignment(id, assignment_id):
+    user = get_session_user()
+    enrollment = Enrollment.query.filter_by(account_fk=user.id, course_fk=id).first_or_404()
+    if enrollment.role != 'student':  # TODO hardcoding
+        return abort(403)
+    return redirect(url_for('.view_assignment', id=id, assignment_id=assignment_id))
 
 
 @course.route('/create', methods=['GET', 'POST'])

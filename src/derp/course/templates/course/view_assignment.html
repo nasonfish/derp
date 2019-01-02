@@ -14,5 +14,20 @@
     <li>Available: {{ assignment.available |relative_date }}</li>
     <li>Due: {{ assignment.due |relative_date }}</li>
     <li>Active: {{ 'yes' if assignment.active() else 'no' }}</li>
+
+    <p>Your git repository: <code>{{ enrollment.repo }}</code></p>
+    <h2>Submissions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Submission ID</th>
+                <th>Details</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
 </ul>
 {% endblock %}

@@ -22,10 +22,11 @@ class Privilege(db.Model):
 
     @staticmethod
     def user_privilege(name):
-        sess = Session.query.filter_by(challenge=session['challenge'], remote_addr=request.remote_addr)\
-            .join(Account)\
+        sess = Session.query.filter_by(challenge=session['challenge'], remote_addr=request.remote_addr) \
+            .join(Account) \
             .filter(Account.student_id == session['student_id']).first()
         return bool([p for p in sess.account.privileges if p.name == name])
+
 
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,10 +56,11 @@ class Session(db.Model):
     def session_user():
         if not session or 'challenge' not in session or 'student_id' not in session or not request:
             return None
-        sess = Session.query.filter_by(challenge=session['challenge'], remote_addr=request.remote_addr)\
-            .join(Account)\
+        sess = Session.query.filter_by(challenge=session['challenge'], remote_addr=request.remote_addr) \
+            .join(Account) \
             .filter(Account.student_id == session['student_id']).first()
         return sess.account
+
 
 class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,6 +88,7 @@ class Account(db.Model):
                 return True
         return False
 
+
 class Enrollment(db.Model):
     account_fk = db.Column(db.Integer, db.ForeignKey('account.id'), primary_key=True)
     account = db.relationship('Account', backref='enrollments', foreign_keys=[account_fk])
@@ -104,6 +107,24 @@ class Enrollment(db.Model):
         db.session.add(self)
         db.session.commit()
 
+
+class Submission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    enrollment_fk = db.Column(db.Integer, db.ForeignKey('enrollment.id'), primary_key=True)
+    enrollment = db.relationship('Enrollment', backref='submissions', foreign_keys=[enrollment_fk])
+    feedback = db.Column(db.Text)
+    status = db.Column(db.String(128))
+
+    def __init__(self, enrollment, feedback=None, status='ungraded'):
+        self.enrollment_fk = enrollment.id
+        self.enrollment = enrollment
+        self.feedback = feedback
+        self.status = status
+
+        db.session.add(self)
+        db.session.commit()
+
+
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(128), nullable=False)
@@ -119,6 +140,7 @@ class Course(db.Model):
 
         db.session.add(self)
         db.session.commit()
+
 
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
