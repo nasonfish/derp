@@ -104,7 +104,7 @@ def signup():
         email = request.form['email']
         student_id = request.form['student_id']
         Account(github_username, student_id, email)
-        return redirect(url_for("index"))
+        return github.authorize()
 
 
 @app.route('/logout')

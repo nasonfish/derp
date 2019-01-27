@@ -90,9 +90,10 @@ class Account(db.Model):
 
 
 class Enrollment(db.Model):
-    account_fk = db.Column(db.Integer, db.ForeignKey('account.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    account_fk = db.Column(db.Integer, db.ForeignKey('account.id'))
     account = db.relationship('Account', backref='enrollments', foreign_keys=[account_fk])
-    course_fk = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
+    course_fk = db.Column(db.Integer, db.ForeignKey('course.id'))
     course = db.relationship('Course', backref='enrollments', foreign_keys=[course_fk])
     repo = db.Column(db.String(256))
     role = db.Column(db.String(128), nullable=False, default='student')
