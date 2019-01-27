@@ -59,7 +59,9 @@ class Session(db.Model):
         sess = Session.query.filter_by(challenge=session['challenge'], remote_addr=request.remote_addr) \
             .join(Account) \
             .filter(Account.student_id == session['student_id']).first()
-        return sess.account
+        if sess:
+            return sess.account
+        return None
 
 
 class Account(db.Model):
